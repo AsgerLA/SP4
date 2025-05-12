@@ -11,13 +11,25 @@ enum PaymentMethod {
     PHYSICAL_CASH
 }
 class Customer {
-    + Customer(String name, Suit[] suits)
-    String name
-    PaymentMethod paymentMethod
-    Suit[] suits
-    int numPeople
-    Date startDate
-    Date endDate
+    - String name
+    - PaymentMethod paymentMethod
+    - List<Suit> suits
+    - int numPeople
+    - Date startDate
+    - Date endDate
+    + String getName()
+        + void setName(String name)
+        + PaymentMethod getPaymentMethod()
+        + void setPaymentMethod(PaymentMethod paymentMethod)
+        + List<Suit> getSuits()
+        + void setSuits(List<Suit> suits)
+        + int getNumPeople()
+        + void setNumPeople(int numPeople)
+        + Date getStartDate()
+        + void setStartDate(Date startDate)
+        + Date getEndDate()
+        + void setEndDate(Date endDate)
+        + Customer(String name, PaymentMethod paymentMethod, List<Suit> suits, int numPeople, Date startDate, Date endDate)
 }
 
 class Activity {
@@ -25,27 +37,54 @@ class Activity {
     fitness
     casino
 }
+class Booking {
+     - List<Suit> suitsList
+     - Customer customer
+     - Scanner sc
+     + Booking(List<Suit> suitsList, Customer customer)
+     + void startSession()
+ }
+
 
 enum ExtraService {
     BREAKFEAST
 }
 class Suit {
-    int suitNum
-    boolean booked
-    Room[] rooms
-    double[] price
-    float holidayFactor
-    ExtraService[] extra
-    boolean balcony
-    SuitType type
+    - int suitNum
+    - boolean booked
+    - List<Room> rooms
+    - double price
+    - float holidayFactor
+    - List<ExtraService> extras
+    - boolean balcony
+    - SuitType type
+    + int getSuitNum()
+        + void setSuitNum(int suitNum)
+        + boolean isBooked()
+        + void setBooked(boolean booked)
+        + List<Room> getRooms()
+        + void setRooms(List<Room> rooms)
+        + double getPrice()
+        + void setPrice(double price)
+        + float getHolidayFactor()
+        + void setHolidayFactor(float holidayFactor)
+        + List<ExtraService> getExtras()
+        + void setExtras(List<ExtraService> extras)
+        + boolean isBalcony()
+        + void setBalcony(boolean balcony)
+        + SuitType getType()
+        + void setType(SuitType type)
+        + Suit(int suitNum, boolean booked, List<Room> rooms, double price, float holidayFactor, List<ExtraService> extras, boolean balcony, SuitType type)
 }
 enum SuitType {
     STANDARD
     LUXERY
 }
 class Room {
-    int maxPeople
-
+    - int maxPeople
+    + int getMaxPeople()
+    + void setMaxPeople(int maxPeople)
+    + Room(int maxPeople)
 }
 
 class Database {
@@ -67,5 +106,5 @@ Suit *-- ExtraService
 Suit *-- SuitType
 Hotel *-- Suit
 Hotel *-- Customer
-
+Hotel *-- Booking
 @enduml
