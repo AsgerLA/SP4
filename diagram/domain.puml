@@ -1,0 +1,21 @@
+@startuml
+
+object customer {
+    start_slut_dato
+    num_suit
+    payment_method
+}
+object hotel
+object suit {
+    num_rooms
+}
+object room {
+    type
+    num_people
+    extra_service
+}
+hotel -- suit
+suit -- room
+hotel -- customer
+customer -- suit
+@enduml

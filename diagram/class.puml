@@ -1,0 +1,71 @@
+@startuml
+
+class Hotel {
+    Database db
+    Customer customer
+    + static void main()
+}
+enum PaymentMethod {
+    ONLINE
+    PHYSICAL_CARD
+    PHYSICAL_CASH
+}
+class Customer {
+    + Customer(String name, Suit[] suits)
+    String name
+    PaymentMethod paymentMethod
+    Suit[] suits
+    int numPeople
+    Date startDate
+    Date endDate
+}
+
+class Activity {
+    spa
+    fitness
+    casino
+}
+
+enum ExtraService {
+    BREAKFEAST
+}
+class Suit {
+    int suitNum
+    boolean booked
+    Room[] rooms
+    double[] price
+    float holidayFactor
+    ExtraService[] extra
+    boolean balcony
+    SuitType type
+}
+enum SuitType {
+    STANDARD
+    LUXERY
+}
+class Room {
+    int maxPeople
+
+}
+
+class Database {
+    Suit getSuit(int suitNum)
+    addSuit(Suit suit)
+    removeSuit(Suit suit)
+}
+
+class DatabaseSQLlite extends Database {
+
+}
+
+Hotel *- Activity
+Hotel *-- Database
+Customer *-- PaymentMethod
+Customer *-- Suit
+Suit *-- Room
+Suit *-- ExtraService
+Suit *-- SuitType
+Hotel *-- Suit
+Hotel *-- Customer
+
+@enduml
