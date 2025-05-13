@@ -1,10 +1,10 @@
 package Class;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import Enum.*;
-import org.w3c.dom.ls.LSOutput;
 
 public class Hotel {
     public static void main(String[] args) {
@@ -13,7 +13,7 @@ public class Hotel {
         // Creating rooms
         Room firstRoom = new Room(3);
         Room secondRoom = new Room(3);
-        //Room thirdRoom = new Room(3);
+        Room thirdRoom = new Room(3);
 
         // Creating an collection of rooms
         List<Room> rooms = new ArrayList<>();
@@ -27,7 +27,7 @@ public class Hotel {
         List<ExtraService> extras = new ArrayList<>();
         extras.add(ExtraService.Breakfast);
         Suit suitNrOne = new Suit(1,false, rooms, 5000, 2500,extras,true, SuitType.Standard);
-        Suit suitNrTwo = new Suit(1,false, rooms, 5000, 2500,extras,true, SuitType.Standard);
+        Suit suitNrTwo = new Suit(2,false, rooms, 5000, 2500,extras,true, SuitType.Luxury);
         suits.add(suitNrOne);
         suits.add(suitNrTwo);
 
@@ -38,9 +38,23 @@ public class Hotel {
 
         Customer customer = new Customer("Jack", PaymentMethod.Online,suits,7,new Date(2025, 6, 3),new Date(2025,6,13));
         System.out.println(customer);
+        DatabaseSQLite db = null;
+        try {
+            db = new DatabaseSQLite("jdbc:sqlite::memory:");
+            db.addSuit(suitNrOne);
+            db.addSuit(suitNrTwo);
+            db.addRoom(suitNrOne.getSuitID(), firstRoom);
+            db.addRoom(suitNrOne.getSuitID(), secondRoom);
+            db.addRoom(suitNrTwo.getSuitID(), thirdRoom);
 
-        Booking booking = new Booking(suits, customer);
-        booking.startSession();
+            Booking booking = new Booking(db, customer);
+            booking.startSession();
+            db.close();
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+
+
     }
 
 }

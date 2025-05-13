@@ -3,7 +3,6 @@ package Class;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import Enum.*;
@@ -41,6 +40,14 @@ public class DatabaseSQLite {
         }
     }
 
+    public void close() throws IOException{
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new IOException("close() "+e.getMessage());
+        }
+    }
+
     public void addSuit(Suit suit) throws IOException {
         String sql = "INSERT INTO Suits VALUES(null, "+suit.getPrice()+", "+suit.getHolidayFactor()+", "+suit.getSuitType().ordinal()+", "+0+")";
         try {
@@ -51,15 +58,37 @@ public class DatabaseSQLite {
         }
     }
 
+
+    public List<Suit> getNumSuits(int n) throws IOException {
+        String sql = "SELECT * FROM Suits WHERE hashName = 0 LIMIT "+n;
+        List<Suit> suits = new ArrayList<>();
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                Suit suit = new Suit(rs.getInt("suitNum"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuitType.values()[rs.getInt("type")]);
+                suits.add(suit);
+            }
+        } catch (SQLException e) {
+            throw new IOException("getCustomerSuits() " + e.getMessage());
+        }
+        return suits;
+    }
+
+
     public List<Suit> getCustomerSuits(Customer customer) throws IOException {
-        long hashName = hashName(customer.getName());
+        long hashName;
+        if (customer == null)
+            hashName = 0;
+        else
+            hashName = hashName(customer.getName());
         String sql = "SELECT * FROM Suits WHERE hashName = "+hashName;
         List<Suit> suits = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suit suit = new Suit(rs.getInt("suitNum"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuitType.Standard);
+                Suit suit = new Suit(rs.getInt("suitNum"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuitType.values()[rs.getInt("type")]);
                 suits.add(suit);
             }
         } catch (SQLException e) {
@@ -138,53 +167,5 @@ public class DatabaseSQLite {
             throw new IOException("addCustomer() "+e.getMessage());
         }
         return true;
-    }
-
-    public static void main(String[] args) {
-        DatabaseSQLite db;
-        try {
-            //db = new DatabaseSQLite("jdbc:sqlite:test.db");
-            db = new DatabaseSQLite("jdbc:sqlite::memory:");
-
-
-            // Creating rooms
-            Room firstRoom = new Room(3);
-            Room secondRoom = new Room(3);
-            Room thirdRoom = new Room(3);
-
-            // Creating an collection of rooms
-            List<Room> rooms = new ArrayList<>();
-            List<Room> rooms2 = new ArrayList<>();
-
-            // Adding rooms to the collection
-            rooms.add(firstRoom);
-            rooms.add(secondRoom);
-            rooms2.add(thirdRoom);
-
-            List<ExtraService> extras = new ArrayList<>();
-            extras.add(ExtraService.Breakfast);
-            Suit suitNrOne = new Suit(1,false, rooms, 5000, 2500,extras,true, SuitType.Standard);
-            Suit suitNrTwo = new Suit(2,false, rooms2, 5000, 2500,extras,true, SuitType.Standard);
-
-            List<Suit> suits = new ArrayList<>();
-            suits.add(suitNrOne);
-            suits.add(suitNrTwo);
-
-
-            Customer customer = new Customer("Jack", PaymentMethod.Online,suits,7,new java.util.Date(2025, 6, 3),new Date(2025,6,13));
-
-            db.addSuit(suitNrOne);
-            db.addSuit(suitNrTwo);
-            db.addRoom(suitNrOne.getSuitID(), firstRoom);
-            db.addRoom(suitNrOne.getSuitID(), secondRoom);
-            db.addRoom(suitNrTwo.getSuitID(), thirdRoom);
-            db.addCustomer(customer);
-            List<Suit> customerSuits = db.getCustomerSuits(customer);
-            for (Suit suit : customerSuits)
-                System.out.println(suit);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            System.exit(-1);
-        }
     }
 }

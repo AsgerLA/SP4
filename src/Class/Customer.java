@@ -13,6 +13,10 @@ private int numPeople;
 private Date startDate;
 private Date endDate;
 
+    public Customer() {
+
+    }
+
     public Customer(String name, PaymentMethod paymentmethod, List<Suit> suits, int numPeople, Date startDate, Date endDate) {
         this.name = name;
         this.paymentmethod = paymentmethod;
