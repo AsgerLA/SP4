@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import Enum.PaymentMethod;
 
 public class Booking {
     private List<Suit> suitsList;
@@ -35,14 +36,13 @@ public class Booking {
 
 
                     List<Suit> freeSuits = db.getCustomerSuites(null);
-                    for (Suit suit : freeSuits)
-                        System.out.println(suit);
-
-                    //for (Suit suit : suitsList) {
-                    //    if (!suit.isBooked()) {
-                    //        System.out.println(suit);
-                    //    }
-                    //}
+                    for (Suit suit : freeSuits) {
+                        System.out.println("Suite: " + suit.getSuitID());
+                        System.out.println("Suite type: " + suit.getSuitType().toString().toLowerCase());
+                        System.out.println("rooms: " + suit.getRooms());
+                        System.out.println("price: " + suit.getPrice());
+                        System.out.println();
+                    }
                     break;
                 case "2":
 
@@ -57,7 +57,8 @@ public class Booking {
                     customer.setEndDate(new Date(ldate.getYear(), ldate.getMonthValue(), ldate.getDayOfMonth()));
                     System.out.println("number of people:");
                     input = sc.nextLine();
-                    customer.setNumPeople(Integer.parseInt(input));
+                    customer.setNumPeople(Integer.
+                            parseInt(input));
 
                     System.out.println("name:");
                     input = sc.nextLine();
@@ -67,8 +68,27 @@ public class Booking {
                     input = sc.nextLine();
                     List<Suit> suits = db.getNumSuites(Integer.parseInt(input));
                     customer.setSuits(suits);
+                    System.out.println("Choose payment method:");
+                    System.out.println("1. Online");
+                    System.out.println("2. In person");
+                    input = sc.nextLine();
+                    if (Integer.parseInt(input) == 1){
+                        customer.setPaymentmethod(PaymentMethod.Online);
+                    }
+                    else if(Integer.parseInt(input) == 2){
+                        System.out.println("Will it be:");
+                        System.out.println("1. Card");
+                        System.out.println("2. Cash");
+                        input = sc.nextLine();
 
+                        if(Integer.parseInt(input) == 1){
+                            customer.setPaymentmethod(PaymentMethod.Physical_card);
 
+                        } else if (Integer.parseInt(input) == 2){
+                            customer.setPaymentmethod(PaymentMethod.Physical_cash);
+
+                        }
+                    }
                     db.addCustomer(customer);
 
                     //System.out.println("Booking-funktion kommer snart.");
