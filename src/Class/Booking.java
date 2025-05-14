@@ -1,6 +1,5 @@
 package Class;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -10,9 +9,9 @@ public class Booking {
     private List<Suit> suitsList;
     private Customer customer;
     private Scanner sc = new Scanner(System.in);
-    private DatabaseSQLite db;
+    private Database db;
 
-    public Booking(DatabaseSQLite db, Customer customer) {
+    public Booking(Database db, Customer customer) {
         //this.suitsList = suitsList;
         //this.customer = customer;
         this.customer = new Customer();
@@ -35,13 +34,10 @@ public class Booking {
                 case "1":
 
 
-                    try {
-                        List<Suit> freeSuits = db.getCustomerSuits(null);
-                        for (Suit suit : freeSuits)
-                            System.out.println(suit);
-                    } catch (IOException e) {
-                        System.err.println(e.getMessage());
-                    }
+                    List<Suit> freeSuits = db.getCustomerSuites(null);
+                    for (Suit suit : freeSuits)
+                        System.out.println(suit);
+
                     //for (Suit suit : suitsList) {
                     //    if (!suit.isBooked()) {
                     //        System.out.println(suit);
@@ -69,30 +65,21 @@ public class Booking {
 
                     System.out.println("number of suits:");
                     input = sc.nextLine();
-                    try {
-                        List<Suit> suits = db.getNumSuits(Integer.parseInt(input));
-                        customer.setSuits(suits);
-                    } catch (IOException e) {
-                        System.err.println(e.getMessage());
-                    }
+                    List<Suit> suits = db.getNumSuites(Integer.parseInt(input));
+                    customer.setSuits(suits);
 
-                    try {
-                        db.addCustomer(customer);
-                    } catch (IOException e) {
-                        System.err.println(e.getMessage());
-                    }
+
+                    db.addCustomer(customer);
+
                     //System.out.println("Booking-funktion kommer snart.");
                     break;
                 case "3":
                     System.out.println("Farvel!");
 
-                    try {
-                        List<Suit> customerSuits = db.getCustomerSuits(customer);
-                        for (Suit suit : customerSuits)
-                            System.out.println(suit);
-                    } catch (IOException e) {
-                        System.err.println(e.getMessage());
-                    }
+                    List<Suit> customerSuits = db.getCustomerSuites(customer);
+                    for (Suit suit : customerSuits)
+                        System.out.println(suit);
+
                     return;
                 default:
                     System.out.println("Skriv et gyldigt tal.");

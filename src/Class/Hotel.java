@@ -38,22 +38,22 @@ public class Hotel {
 
         Customer customer = new Customer("Jack", PaymentMethod.Online,suits,7,new Date(2025, 6, 3),new Date(2025,6,13));
         System.out.println(customer);
-        DatabaseSQLite db = null;
+        Database db = null;
         try {
             db = new DatabaseSQLite("jdbc:sqlite::memory:");
-            db.addSuit(suitNrOne);
-            db.addSuit(suitNrTwo);
-            db.addRoom(suitNrOne.getSuitID(), firstRoom);
-            db.addRoom(suitNrOne.getSuitID(), secondRoom);
-            db.addRoom(suitNrTwo.getSuitID(), thirdRoom);
-
-            Booking booking = new Booking(db, customer);
-            booking.startSession();
-            db.close();
         } catch (IOException e) {
             System.err.println(e.getMessage());
+            System.exit(-1);
         }
+        db.addSuite(suitNrOne);
+        db.addSuite(suitNrTwo);
+        db.addRoom(suitNrOne.getSuitID(), firstRoom);
+        db.addRoom(suitNrOne.getSuitID(), secondRoom);
+        db.addRoom(suitNrTwo.getSuitID(), thirdRoom);
 
+        Booking booking = new Booking(db, customer);
+        booking.startSession();
+        db.close();
 
     }
 
