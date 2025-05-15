@@ -68,6 +68,35 @@ public class DatabaseSQLite implements Database {
         return true;
     }
 
+    public List<Suit> getSuites(int minPeople, Date startDate, Date endDate) {
+        System.out.println("TODO: endDate");
+        StringBuilder sb = new StringBuilder();
+        sb.append("""
+        SELECT Suites.suiteID, Suites.price, Suites.holidayFactor, Suites.type,
+        COUNT(Rooms.suiteID) roomCnt, SUM(Rooms.maxPeople) AS maxPeopleSum
+        FROM Suites
+        LEFT JOIN Rooms ON Suites.suiteID=Rooms.suiteID
+        LEFT JOIN Customers ON Suites.hashName=Customers.hashName
+        WHERE Suites.hashName=0 OR Customers.endDate < """);
+        sb.append(startDate.toInstant().getEpochSecond());
+        sb.append(" GROUP BY Suites.suiteID HAVING maxPeopleSum >= ");
+        sb.append(minPeople);
+        String sql = sb.toString();
+        List<Suit> suits = new ArrayList<>();
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                Suit suit = new Suit(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuitType.values()[rs.getInt("type")]);
+                suit.setRooms(this.getSuiteRooms(suit.getSuitID()));
+                suits.add(suit);
+            }
+        } catch (SQLException e) {
+            System.err.println("getSuites() " + e.getMessage());
+            return null;
+        }
+        return suits;
+    }
 
     public List<Suit> getNumSuites(int n) {
         String sql = "SELECT * FROM Suites WHERE hashName = 0 LIMIT "+n;
@@ -87,13 +116,10 @@ public class DatabaseSQLite implements Database {
     }
 
 
-    public List<Suit> getCustomerSuites(Customer customer) {
+    public List<Suit> getCustomerSuites(String name) {
         long hashName = 0;
-        if (customer != null) {
-            if (customer.getName() == null)
-                return null;
-            hashName = hashName(customer.getName());
-        }
+        if (name != null)
+            hashName = hashName(name);
         String sql = "SELECT * FROM Suites WHERE hashName = "+hashName;
         List<Suit> suits = new ArrayList<>();
         try {
@@ -150,7 +176,7 @@ public class DatabaseSQLite implements Database {
                 rooms.add(room);
             }
         } catch (SQLException e) {
-            System.err.println("getRooms() "+e.getMessage());
+            System.err.println("getSuiteRooms() "+e.getMessage());
             return null;
         }
         return rooms;
@@ -165,9 +191,6 @@ public class DatabaseSQLite implements Database {
         String sql = "INSERT INTO Customers VALUES (?, ?, ?, ?, ?, ?)";
         try {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT hashName FROM Customers WHERE hashName = "+hashName);
-            if (rs.next())
-                return false;
             PreparedStatement ps = conn.prepareStatement(sql);
             int i = 1;
             ps.setLong(i++, hashName);
@@ -195,6 +218,8 @@ public class DatabaseSQLite implements Database {
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
+
+            stmt.execute("UPDATE Suites SET hashName = 0 WHERE hashName = " + hashName);
         } catch (SQLException e) {
             System.err.println("removeCustomer() "+e.getMessage());
             return false;
@@ -226,6 +251,7 @@ public class DatabaseSQLite implements Database {
         Database db = null;
         try {
             db = new DatabaseSQLite("jdbc:sqlite::memory:");
+            //db = new DatabaseSQLite("jdbc:sqlite:test.db");
         } catch (IOException e) {
             System.exit(-1);
         }
@@ -241,6 +267,7 @@ public class DatabaseSQLite implements Database {
         db.addRoom(3, new Room(2));
         db.addRoom(3, new Room(2));
 
+        /*
         List<Suit> availSuites = db.getCustomerSuites(null);
         for (Suit suit : availSuites) {
             System.out.println(suit);
@@ -249,8 +276,6 @@ public class DatabaseSQLite implements Database {
         availSuites = db.getNumSuites(2);
         Customer customer = new Customer("Jack", PaymentMethod.Online,availSuites,7,new java.util.Date(2025, 6, 3),new Date(2025,6,13));
         db.addCustomer(customer);
-        if (db.addCustomer(customer))
-            System.err.println("added customer twice");
 
         availSuites = db.getNumSuites(2);
         db.addCustomer(new Customer("Ole", PaymentMethod.Online,availSuites,7,new java.util.Date(2025, 6, 3),new Date(2025,6,13)));
@@ -258,7 +283,7 @@ public class DatabaseSQLite implements Database {
             System.err.println("suites available");
 
         customer = db.getCustomer("Jack");
-        List<Suit> bookedSuites = db.getCustomerSuites(customer);
+        List<Suit> bookedSuites = db.getCustomerSuites(customer.getName());
         customer.setSuits(bookedSuites);
         System.out.println(customer);
         for (Suit suit : bookedSuites) {
@@ -266,6 +291,14 @@ public class DatabaseSQLite implements Database {
             for (Room room : db.getSuiteRooms(suit.getSuitID()))
                 System.out.println(room);
         }
+        db.removeCustomer("Ole");
+        System.out.println("getSuites");
+        List<Suit> suites = db.getSuites(3);
+        for (Suit suite : suites)
+            System.out.println(suite);
+         */
         db.close();
     }
+
+
 }

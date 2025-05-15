@@ -1,88 +1,142 @@
 package Class;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
+import Enum.*;
+
 public class Booking {
-    private List<Suit> suitsList;
-    private Customer customer;
-    private Scanner sc = new Scanner(System.in);
+    private Scanner sc;
     private Database db;
 
-    public Booking(Database db, Customer customer) {
-        //this.suitsList = suitsList;
-        //this.customer = customer;
-        this.customer = new Customer();
+    public Booking(Database db) {
+        sc = new Scanner(System.in);
         this.db = db;
     }
 
     public void startSession() {
+        int num = 0;
+        boolean pause = false;
+        boolean quitFlag = false;
+        while (!quitFlag) {
+            if (pause) {
+                System.out.println("Press ENTER to continue");
+                sc.nextLine();
+                pause = false;
+            }
+            System.out.println("Main menu");
+            System.out.println("------------------------------");
+            System.out.println("(1) Book");
+            System.out.println("(2) Quit");
+            System.out.println("------------------------------");
+            System.out.print("Enter a number: ");
+            try {
+                num = Integer.decode(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("*** Invalid number");
+                continue;
+            }
+            switch (num) {
+                case 1: {
+                    pause = true;
+                    Customer customer;
+                    System.out.print("Name: ");
+                    String name = sc.nextLine().trim();
+                    customer = db.getCustomer(name);
+                    if (customer == null) {
+                        customer = new Customer();
+                        customer.setName(name);
+                    }
+                    System.out.print("Number of guest: ");
+                    int numPeople;
+                    try {
+                        numPeople = Integer.decode(sc.nextLine());
+                    } catch (NumberFormatException e) {
+                        System.out.println("*** Invalid number");
+                        break;
+                    }
+                    try {
+                        System.out.print("Start date: ");
+                        LocalDate startDate = LocalDate.parse(sc.nextLine());
+                        customer.setStartDate(Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                        System.out.print("End date: ");
+                        LocalDate endDate = LocalDate.parse(sc.nextLine());
+                        if (endDate.isBefore(startDate))
+                            throw new Exception();
+                        customer.setEndDate(Date.from(endDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                    } catch (Exception e) {
+                        System.out.println("*** Invalid date");
+                        break;
+                    }
+                    List<Suit> availSuites = db.getSuites(numPeople,
+                            customer.getStartDate(), customer.getEndDate());
+                    if (availSuites == null || availSuites.isEmpty()) {
+                        System.out.println("No suites available");
+                        break;
+                    }
+                    System.out.println("Available suites:");
+                    int i;
+                    for (i = 0; i < availSuites.size(); i++) {
+                        Suit suit = availSuites.get(i);
+                        System.out.println("Suite: " + suit.getSuitID());
+                        System.out.println("Suite type: " + suit.getSuitType().toString().toLowerCase());
+                        System.out.println("rooms: " + suit.getRooms());
+                        System.out.println("price: " + suit.getPrice());
+                        System.out.println();
+                    }
+                    System.out.print("Select suites (e.g. \"1 2\"): ");
+                    String[] values = sc.nextLine().split(" ");
+                    List<Suit> bookedSuites = new java.util.ArrayList<>();
+                    for (String s : values) {
+                        try {
+                            i = Integer.decode(s)-1;
+                        } catch (NumberFormatException e) {
+                            System.out.println("*** Invalid number");
+                            break;
+                        }
+                        if (i < 0 || i >= availSuites.size()) {
+                            System.out.println("*** Invalid suite: "+(i+1));
+                            continue;
+                        }
+                        bookedSuites.add(availSuites.get(i));
+                    }
+                    System.out.println("Suites Booked:");
+                    for (Suit suite : bookedSuites)
+                        System.out.println("  "+suite);
+                    customer.setSuits(bookedSuites);
+                    System.out.println("Choose payment method:");
+                    System.out.println("1. Online");
+                    System.out.println("2. In person");
+                    String input = sc.nextLine();
+                    if (Integer.parseInt(input) == 1) {
+                        customer.setPaymentmethod(PaymentMethod.Online);
+                    }
+                    else if(Integer.parseInt(input) == 2) {
+                        System.out.println("Will it be:");
+                        System.out.println("1. Card");
+                        System.out.println("2. Cash");
+                        input = sc.nextLine();
 
-        String input;
-        System.out.println("Velkommen");
-        while (true) {
-            System.out.println("\nStartMenu:");
-            System.out.println("1. Ledige værelser");
-            System.out.println("2. Book");
-            System.out.println("3. Afslut");
+                        if(Integer.parseInt(input) == 1){
+                            customer.setPaymentmethod(PaymentMethod.Physical_card);
 
-            input = sc.nextLine();
+                        } else if (Integer.parseInt(input) == 2){
+                            customer.setPaymentmethod(PaymentMethod.Physical_cash);
 
-            switch (input) {
-                case "1":
-
-
-                    List<Suit> freeSuits = db.getCustomerSuites(null);
-                    for (Suit suit : freeSuits)
-                        System.out.println(suit);
-
-                    //for (Suit suit : suitsList) {
-                    //    if (!suit.isBooked()) {
-                    //        System.out.println(suit);
-                    //    }
-                    //}
-                    break;
-                case "2":
-
-                    System.out.println("start date:");
-                    input = sc.nextLine();
-                    LocalDate ldate = LocalDate.parse(input);
-                    customer.setStartDate(new Date(ldate.getYear(), ldate.getMonthValue(), ldate.getDayOfMonth()));
-
-                    System.out.println("end date:");
-                    input = sc.nextLine();
-                    ldate = LocalDate.parse(input);
-                    customer.setEndDate(new Date(ldate.getYear(), ldate.getMonthValue(), ldate.getDayOfMonth()));
-                    System.out.println("number of people:");
-                    input = sc.nextLine();
-                    customer.setNumPeople(Integer.parseInt(input));
-
-                    System.out.println("name:");
-                    input = sc.nextLine();
-                    customer.setName(input);
-
-                    System.out.println("number of suits:");
-                    input = sc.nextLine();
-                    List<Suit> suits = db.getNumSuites(Integer.parseInt(input));
-                    customer.setSuits(suits);
-
-
+                        }
+                    }
                     db.addCustomer(customer);
-
-                    //System.out.println("Booking-funktion kommer snart.");
                     break;
-                case "3":
-                    System.out.println("Farvel!");
-
-                    List<Suit> customerSuits = db.getCustomerSuites(customer);
-                    for (Suit suit : customerSuits)
-                        System.out.println(suit);
-
-                    return;
+                }
+                case 2:
+                    System.out.println("exiting...");
+                    quitFlag = true;
+                    break;
                 default:
-                    System.out.println("Skriv et gyldigt tal.");
+                    System.out.println("*** Unknown option");
                     break;
             }
         }

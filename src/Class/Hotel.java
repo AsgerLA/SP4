@@ -32,12 +32,12 @@ public class Hotel {
         suits.add(suitNrTwo);
 
         //System.out.println(suits);
-        for (Suit s: suits){
-            System.out.println(s);
-        }
+        //for (Suit s: suits){
+        //    System.out.println(s);
+        //}
 
-        Customer customer = new Customer("Jack", PaymentMethod.Online,suits,7,new Date(2025, 6, 3),new Date(2025,6,13));
-        System.out.println(customer);
+        //Customer customer = new Customer("Jack", PaymentMethod.Online,suits,7,new// Date(2025, 6, 3),new Date(2025,6,13));
+        //System.out.println(customer);
         Database db = null;
         try {
             db = new DatabaseSQLite("jdbc:sqlite::memory:");
@@ -51,7 +51,7 @@ public class Hotel {
         db.addRoom(suitNrOne.getSuitID(), secondRoom);
         db.addRoom(suitNrTwo.getSuitID(), thirdRoom);
 
-        Booking booking = new Booking(db, customer);
+        Booking booking = new Booking(db);
         booking.startSession();
         db.close();
 
