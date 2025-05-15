@@ -8,7 +8,7 @@ import java.util.List;
 public class Customer {
 private String name;
 private PaymentMethod paymentmethod;
-private List<Suit> suits;
+private List<Suite> suites;
 private int numPeople;
 private Date startDate;
 private Date endDate;
@@ -17,10 +17,10 @@ private Date endDate;
 
     }
 
-    public Customer(String name, PaymentMethod paymentmethod, List<Suit> suits, int numPeople, Date startDate, Date endDate) {
+    public Customer(String name, PaymentMethod paymentmethod, List<Suite> suites, int numPeople, Date startDate, Date endDate) {
         this.name = name;
         this.paymentmethod = paymentmethod;
-        this.suits = suits;
+        this.suites = suites;
         this.numPeople = numPeople;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -42,12 +42,12 @@ private Date endDate;
         this.paymentmethod = paymentmethod;
     }
 
-    public List<Suit> getSuits() {
-        return suits;
+    public List<Suite> getSuits() {
+        return suites;
     }
 
-    public void setSuits(List<Suit> suits) {
-        this.suits = suits;
+    public void setSuits(List<Suite> suites) {
+        this.suites = suites;
     }
 
     public int getNumPeople() {
@@ -79,7 +79,7 @@ private Date endDate;
         return "Customer{" +
                 "name='" + name + '\'' +
                 ", paymentmethod=" + paymentmethod +
-                ", suits=" + suits +
+                ", suits=" + suites +
                 ", numPeople=" + numPeople +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +

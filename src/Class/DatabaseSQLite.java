@@ -51,15 +51,15 @@ public class DatabaseSQLite implements Database {
         return true;
     }
 
-    public boolean addSuite(Suit suit) {
-        String sql = "INSERT INTO Suites VALUES(null, "+suit.getPrice()+", "+suit.getHolidayFactor()+", "+suit.getSuitType().ordinal()+", "+0+")";
+    public boolean addSuite(Suite suite) {
+        String sql = "INSERT INTO Suites VALUES(null, "+ suite.getPrice()+", "+ suite.getHolidayFactor()+", "+ suite.getSuitType().ordinal()+", "+0+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
-            List<Room> rooms = suit.getRooms();
+            List<Room> rooms = suite.getRooms();
             if (rooms != null) {
                 for (Room room : rooms)
-                    this.addRoom(suit.getSuitID(), room);
+                    this.addRoom(suite.getSuitID(), room);
             }
         } catch (SQLException e) {
             System.err.println("addSuit() "+e.getMessage());
@@ -68,7 +68,7 @@ public class DatabaseSQLite implements Database {
         return true;
     }
 
-    public List<Suit> getSuites(int minPeople, Date startDate, Date endDate) {
+    public List<Suite> getSuites(int minPeople, Date startDate, Date endDate) {
         System.out.println("TODO: endDate");
         StringBuilder sb = new StringBuilder();
         sb.append("""
@@ -82,58 +82,58 @@ public class DatabaseSQLite implements Database {
         sb.append(" GROUP BY Suites.suiteID HAVING maxPeopleSum >= ");
         sb.append(minPeople);
         String sql = sb.toString();
-        List<Suit> suits = new ArrayList<>();
+        List<Suite> suites = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suit suit = new Suit(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuitType.values()[rs.getInt("type")]);
-                suit.setRooms(this.getSuiteRooms(suit.getSuitID()));
-                suits.add(suit);
+                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuiteType.values()[rs.getInt("type")]);
+                suite.setRooms(this.getSuiteRooms(suite.getSuitID()));
+                suites.add(suite);
             }
         } catch (SQLException e) {
             System.err.println("getSuites() " + e.getMessage());
             return null;
         }
-        return suits;
+        return suites;
     }
 
-    public List<Suit> getNumSuites(int n) {
+    public List<Suite> getNumSuites(int n) {
         String sql = "SELECT * FROM Suites WHERE hashName = 0 LIMIT "+n;
-        List<Suit> suits = new ArrayList<>();
+        List<Suite> suites = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suit suit = new Suit(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuitType.values()[rs.getInt("type")]);
-                suits.add(suit);
+                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuiteType.values()[rs.getInt("type")]);
+                suites.add(suite);
             }
         } catch (SQLException e) {
             System.err.println("getCustomerSuites() " + e.getMessage());
             return null;
         }
-        return suits;
+        return suites;
     }
 
 
-    public List<Suit> getCustomerSuites(String name) {
+    public List<Suite> getCustomerSuites(String name) {
         long hashName = 0;
         if (name != null)
             hashName = hashName(name);
         String sql = "SELECT * FROM Suites WHERE hashName = "+hashName;
-        List<Suit> suits = new ArrayList<>();
+        List<Suite> suites = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suit suit = new Suit(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuitType.values()[rs.getInt("type")]);
-                suits.add(suit);
+                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuiteType.values()[rs.getInt("type")]);
+                suites.add(suite);
             }
         } catch (SQLException e) {
             System.err.println("getCustomerSuites() " + e.getMessage());
             return null;
         }
-        return suits;
+        return suites;
     }
 
     public boolean addRoom(int suiteID, Room room) {
@@ -201,8 +201,8 @@ public class DatabaseSQLite implements Database {
             ps.setLong(i, customer.getEndDate().toInstant().getEpochSecond());
             ps.executeUpdate();
 
-            for (Suit suit : customer.getSuits()) {
-                stmt.execute("UPDATE Suites SET hashName = " + hashName + " WHERE suiteID = " + suit.getSuitID());
+            for (Suite suite : customer.getSuits()) {
+                stmt.execute("UPDATE Suites SET hashName = " + hashName + " WHERE suiteID = " + suite.getSuitID());
             }
 
         } catch (SQLException e) {
@@ -258,9 +258,9 @@ public class DatabaseSQLite implements Database {
 
         List<Room> rooms = new java.util.ArrayList<>();
         rooms.add(new Room(2));
-        db.addSuite(new Suit(1, false, rooms, 1000, 1500, null, false, SuitType.Standard));
-        db.addSuite(new Suit(2, false, null, 1200, 1600, null, false, SuitType.Standard));
-        db.addSuite(new Suit(3, false, null, 1200, 1600, null, false, SuitType.Luxury));
+        db.addSuite(new Suite(1, false, rooms, 1000, 1500, null, false, SuiteType.Standard));
+        db.addSuite(new Suite(2, false, null, 1200, 1600, null, false, SuiteType.Standard));
+        db.addSuite(new Suite(3, false, null, 1200, 1600, null, false, SuiteType.Luxury));
 
         //db.addRoom(1, new Room(2));
         db.addRoom(2, new Room(3));

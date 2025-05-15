@@ -71,7 +71,7 @@ public class Booking {
                         System.out.println("*** Invalid date");
                         break;
                     }
-                    List<Suit> availSuites = db.getSuites(numPeople,
+                    List<Suite> availSuites = db.getSuites(numPeople,
                             customer.getStartDate(), customer.getEndDate());
                     if (availSuites == null || availSuites.isEmpty()) {
                         System.out.println("No suites available");
@@ -80,16 +80,16 @@ public class Booking {
                     System.out.println("Available suites:");
                     int i;
                     for (i = 0; i < availSuites.size(); i++) {
-                        Suit suit = availSuites.get(i);
-                        System.out.println("Suite: " + suit.getSuitID());
-                        System.out.println("Suite type: " + suit.getSuitType().toString().toLowerCase());
-                        System.out.println("rooms: " + suit.getRooms());
-                        System.out.println("price: " + suit.getPrice());
+                        Suite suite = availSuites.get(i);
+                        System.out.println("Suite: " + suite.getSuitID());
+                        System.out.println("Suite type: " + suite.getSuitType().toString().toLowerCase());
+                        System.out.println("rooms: " + suite.getRooms());
+                        System.out.println("price: " + suite.getPrice());
                         System.out.println();
                     }
                     System.out.print("Select suites (e.g. \"1 2\"): ");
                     String[] values = sc.nextLine().split(" ");
-                    List<Suit> bookedSuites = new java.util.ArrayList<>();
+                    List<Suite> bookedSuites = new java.util.ArrayList<>();
                     for (String s : values) {
                         try {
                             i = Integer.decode(s)-1;
@@ -104,8 +104,40 @@ public class Booking {
                         bookedSuites.add(availSuites.get(i));
                     }
                     System.out.println("Suites Booked:");
-                    for (Suit suite : bookedSuites)
-                        System.out.println("  "+suite);
+                    double totalPrice = 0;
+                    for (Suite suite : bookedSuites) {
+                        System.out.println("Suite: " + suite.getSuitID());
+                        System.out.println("Suite type: " + suite.getSuitType().toString().toLowerCase());
+                        System.out.println("rooms: " + suite.getRooms());
+                        System.out.println("price: " + suite.getPrice());
+                        System.out.println();
+                        totalPrice += suite.getPrice();
+                    }
+                    System.out.println("Total price: "+totalPrice);
+                    System.out.print("Extra service (y/n): ");
+                    if (sc.nextLine().equals("y")) {
+                        for (i = 0; i < ExtraService.values().length; i++) {
+                            System.out.println((i+1)+": "+ExtraService.values()[i].toString()+" (price:"+ExtraService.prices[i]+")");
+                        }
+                        values = sc.nextLine().split(" ");
+                        List<ExtraService> extra = new java.util.ArrayList<>();
+                        for (String s : values) {
+                            try {
+                                i = Integer.decode(s)-1;
+                            } catch (NumberFormatException e) {
+                                System.out.println("*** Invalid number");
+                                break;
+                            }
+                            if (i < 0 || i >= ExtraService.values().length) {
+                                System.out.println("*** Invalid choice: "+(i+1));
+                                continue;
+                            }
+                            extra.add(ExtraService.values()[i]);
+                            totalPrice += ExtraService.prices[i];
+                        }
+                        System.out.println(extra);
+                        System.out.println("Total price: "+totalPrice);
+                    }
                     customer.setSuits(bookedSuites);
                     System.out.println("Choose payment method:");
                     System.out.println("1. Online");
@@ -122,10 +154,8 @@ public class Booking {
 
                         if(Integer.parseInt(input) == 1){
                             customer.setPaymentmethod(PaymentMethod.Physical_card);
-
                         } else if (Integer.parseInt(input) == 2){
                             customer.setPaymentmethod(PaymentMethod.Physical_cash);
-
                         }
                     }
                     db.addCustomer(customer);

@@ -2,13 +2,12 @@ package Class;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import Enum.*;
 
 public class Hotel {
     public static void main(String[] args) {
-        List<Suit> suits = new ArrayList<>();
+        List<Suite> suites = new ArrayList<>();
 
         // Creating rooms
         Room firstRoom = new Room(3);
@@ -26,10 +25,10 @@ public class Hotel {
 
         List<ExtraService> extras = new ArrayList<>();
         extras.add(ExtraService.Breakfast);
-        Suit suitNrOne = new Suit(1,false, rooms, 5000, 2500,extras,true, SuitType.Standard);
-        Suit suitNrTwo = new Suit(2,false, rooms, 5000, 2500,extras,true, SuitType.Luxury);
-        suits.add(suitNrOne);
-        suits.add(suitNrTwo);
+        Suite suiteNrOne = new Suite(1,false, rooms, 5000, 2500,extras,true, SuiteType.Standard);
+        Suite suiteNrTwo = new Suite(2,false, rooms, 5000, 2500,extras,true, SuiteType.Luxury);
+        suites.add(suiteNrOne);
+        suites.add(suiteNrTwo);
 
         //System.out.println(suits);
         //for (Suit s: suits){
@@ -45,11 +44,11 @@ public class Hotel {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
-        db.addSuite(suitNrOne);
-        db.addSuite(suitNrTwo);
-        db.addRoom(suitNrOne.getSuitID(), firstRoom);
-        db.addRoom(suitNrOne.getSuitID(), secondRoom);
-        db.addRoom(suitNrTwo.getSuitID(), thirdRoom);
+        db.addSuite(suiteNrOne);
+        db.addSuite(suiteNrTwo);
+        db.addRoom(suiteNrOne.getSuitID(), firstRoom);
+        db.addRoom(suiteNrOne.getSuitID(), secondRoom);
+        db.addRoom(suiteNrTwo.getSuitID(), thirdRoom);
 
         Booking booking = new Booking(db);
         booking.startSession();
