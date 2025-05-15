@@ -97,6 +97,15 @@ class DatabaseSQLlite extends Database {
 
 }
 
+class Log {
+    - static PrintStream out
+    + static void setOutputStream(OutputStream out)
+
+    + static void warn(String msg)
+    + static void error(String msg)
+    + static void flush()
+}
+
 Hotel *- Activity
 Hotel *-- Database
 Customer *-- PaymentMethod
