@@ -18,9 +18,14 @@ public class Booking {
     }
 
     public void startSession() {
+        Menu mainmenu = new Menu("Main menu", "Quit");
+        mainmenu.addOption(new OptionBook());
+        mainmenu.show();
+        /*
         int num = 0;
         boolean pause = false;
         boolean quitFlag = false;
+
         while (!quitFlag) {
             if (pause) {
                 System.out.println("Press ENTER to continue");
@@ -169,6 +174,6 @@ public class Booking {
                     System.out.println("*** Unknown option");
                     break;
             }
-        }
+        }*/
     }
 }
