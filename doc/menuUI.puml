@@ -1,0 +1,35 @@
+@startuml
+
+object MainMenu {
+    Book
+    Cancel
+    CheckOut
+    Quit
+}
+
+object Book {
+    name
+    numPeople
+    startDate
+    endDate
+    // find avail suites
+    pickSuites
+    extraService (y/n)
+    // book suites
+}
+
+object Cancel {
+    name
+    // show booked suites
+    picjSuites
+    // remove booked suites
+}
+
+object CheckOut {
+    // show total price
+}
+
+MainMenu -- Book
+MainMenu -- Cancel
+MainMenu -- CheckOut
+@enduml

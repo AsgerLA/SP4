@@ -1,5 +1,24 @@
 @startuml
 
+class Menu {
+    - boolean closeFlag
+    - Option[] options
+    - String exitTitle
+    - String title
+
+    + Menu(String tile)
+    + addOption(Option opt)
+    + setExitTitle(String title)
+    + show()
+}
+
+class Option {
+    + Option(String title)
+    + run()
+}
+Menu *-- Option
+class OptionBook extends Option {}
+
 class Hotel {
     Database db
     Customer customer
