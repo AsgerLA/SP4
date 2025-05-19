@@ -2,10 +2,20 @@ package Class;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import Enum.*;
 
 public class Hotel {
+    static Database db;
+    static {
+        try {
+            db = new DatabaseSQLite("jdbc:sqlite::memory:");
+            //db = new DatabaseSQLite("jdbc:sqlite:hotel.db");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static void main(String[] args) {
         List<Suite> suites = new ArrayList<>();
 
@@ -25,33 +35,25 @@ public class Hotel {
 
         List<ExtraService> extras = new ArrayList<>();
         extras.add(ExtraService.Breakfast);
-        Suite suiteNrOne = new Suite(1,false, rooms, 5000, 2500,extras,true, SuiteType.Standard);
-        Suite suiteNrTwo = new Suite(2,false, rooms, 5000, 2500,extras,true, SuiteType.Luxury);
+        Suite suiteNrOne = new Suite(1,false, null, 5000, 2500,extras,true, SuiteType.Standard);
+        Suite suiteNrTwo = new Suite(2,false, null, 5000, 2500,extras,true, SuiteType.Luxury);
         suites.add(suiteNrOne);
         suites.add(suiteNrTwo);
 
-        //System.out.println(suits);
-        //for (Suit s: suits){
-        //    System.out.println(s);
-        //}
-
-        //Customer customer = new Customer("Jack", PaymentMethod.Online,suits,7,new// Date(2025, 6, 3),new Date(2025,6,13));
-        //System.out.println(customer);
-        Database db = null;
-        try {
-            db = new DatabaseSQLite("jdbc:sqlite::memory:");
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            System.exit(-1);
-        }
         db.addSuite(suiteNrOne);
         db.addSuite(suiteNrTwo);
-        db.addRoom(suiteNrOne.getSuitID(), firstRoom);
-        db.addRoom(suiteNrOne.getSuitID(), secondRoom);
-        db.addRoom(suiteNrTwo.getSuitID(), thirdRoom);
+        db.addRoom(suiteNrOne, firstRoom);
+        db.addRoom(suiteNrOne, secondRoom);
+        db.addRoom(suiteNrTwo, thirdRoom);
 
         Booking booking = new Booking(db);
         booking.startSession();
+
+        db.printTable("Customers");
+        db.printTable("Suites");
+        db.printTable("Rooms");
+        db.printTable("Bookings");
+
         db.close();
 
     }

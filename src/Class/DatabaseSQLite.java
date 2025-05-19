@@ -2,6 +2,9 @@ package Class;
 
 import java.io.IOException;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,16 +29,13 @@ public class DatabaseSQLite implements Database {
         try {
             conn = DriverManager.getConnection(url);
 
-            String[] statements = new String[] {"""
-            CREATE TABLE IF NOT EXISTS Suites (suiteID INTEGER PRIMARY KEY AUTOINCREMENT, price DOUBLE, holidayFactor FLOAT, type INTEGER, hashName INTEGER);
-            """, """
-            CREATE TABLE IF NOT EXISTS Rooms (suiteID INTEGER KEY, maxPeople INTEGER);
-            """, """
-            CREATE TABLE IF NOT EXISTS Customers (hashName INTEGER PRIMARY KEY, name TEXT, paymentMethod INTEGER, numPeople INTEGER, startDate LONG, endDate LONG);
-            """};
             Statement stmt = conn.createStatement();
-            for (String sql : statements)
-                stmt.execute(sql);
+
+            stmt.execute("CREATE TABLE IF NOT EXISTS Customers (hashName INTEGER PRIMARY KEY UNIQUE, name TEXT, paymentMethod INTEGER)");
+            stmt.execute("CREATE TABLE IF NOT EXISTS Bookings (bookingID INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, hashName INTEGER REFERENCES Customers (hashName), suiteID INTEGER REFERENCES Suites (suiteID), numPeople INTEGER, startDate INTEGER, endDate INTEGER, price DOUBLE)");
+            stmt.execute("CREATE TABLE IF NOT EXISTS Suites (suiteID INTEGER PRIMARY KEY UNIQUE, price DOUBLE, suiteType INTEGER)");
+            stmt.execute("CREATE TABLE IF NOT EXISTS Rooms (suiteID INTEGER REFERENCES Suites (suiteID), maxPeople INTEGER)");
+
         } catch (SQLException e) {
             throw new IOException("DatabaseSQLite() "+e.getMessage());
         }
@@ -51,15 +51,33 @@ public class DatabaseSQLite implements Database {
         return true;
     }
 
+    public void printTable(String name) {
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM "+name);
+            ResultSetMetaData rsmd = rs.getMetaData();
+
+            int cnt = rsmd.getColumnCount();
+            System.out.println(name);
+            while (rs.next()) {
+                for (int i = 1 ; i <= cnt; i++)
+                    System.out.print(rs.getString(i) + " | ");
+                System.out.println();
+            }
+        } catch (SQLException e) {
+            System.err.println("debugPrint() "+e.getMessage());
+        }
+    }
+
     public boolean addSuite(Suite suite) {
-        String sql = "INSERT INTO Suites VALUES(null, "+ suite.getPrice()+", "+ suite.getHolidayFactor()+", "+ suite.getSuitType().ordinal()+", "+0+")";
+        String sql = "INSERT INTO Suites VALUES("+suite.getSuitID()+", "+suite.getPrice()+", "+suite.getSuitType().ordinal()+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
             List<Room> rooms = suite.getRooms();
             if (rooms != null) {
                 for (Room room : rooms)
-                    this.addRoom(suite.getSuitID(), room);
+                    this.addRoom(suite, room);
             }
         } catch (SQLException e) {
             System.err.println("addSuit() "+e.getMessage());
@@ -68,76 +86,8 @@ public class DatabaseSQLite implements Database {
         return true;
     }
 
-    public List<Suite> getSuites(int minPeople, Date startDate, Date endDate) {
-        System.out.println("TODO: endDate");
-        StringBuilder sb = new StringBuilder();
-        sb.append("""
-        SELECT Suites.suiteID, Suites.price, Suites.holidayFactor, Suites.type,
-        COUNT(Rooms.suiteID) roomCnt, SUM(Rooms.maxPeople) AS maxPeopleSum
-        FROM Suites
-        LEFT JOIN Rooms ON Suites.suiteID=Rooms.suiteID
-        LEFT JOIN Customers ON Suites.hashName=Customers.hashName
-        WHERE Suites.hashName=0 OR Customers.endDate < """);
-        sb.append(startDate.toInstant().getEpochSecond());
-        sb.append(" GROUP BY Suites.suiteID HAVING maxPeopleSum >= ");
-        sb.append(minPeople);
-        String sql = sb.toString();
-        List<Suite> suites = new ArrayList<>();
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuiteType.values()[rs.getInt("type")]);
-                suite.setRooms(this.getSuiteRooms(suite.getSuitID()));
-                suites.add(suite);
-            }
-        } catch (SQLException e) {
-            System.err.println("getSuites() " + e.getMessage());
-            return null;
-        }
-        return suites;
-    }
-
-    public List<Suite> getNumSuites(int n) {
-        String sql = "SELECT * FROM Suites WHERE hashName = 0 LIMIT "+n;
-        List<Suite> suites = new ArrayList<>();
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuiteType.values()[rs.getInt("type")]);
-                suites.add(suite);
-            }
-        } catch (SQLException e) {
-            System.err.println("getCustomerSuites() " + e.getMessage());
-            return null;
-        }
-        return suites;
-    }
-
-
-    public List<Suite> getCustomerSuites(String name) {
-        long hashName = 0;
-        if (name != null)
-            hashName = hashName(name);
-        String sql = "SELECT * FROM Suites WHERE hashName = "+hashName;
-        List<Suite> suites = new ArrayList<>();
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), rs.getFloat("holidayFactor"), null, false, SuiteType.values()[rs.getInt("type")]);
-                suites.add(suite);
-            }
-        } catch (SQLException e) {
-            System.err.println("getCustomerSuites() " + e.getMessage());
-            return null;
-        }
-        return suites;
-    }
-
-    public boolean addRoom(int suiteID, Room room) {
-        String sql = "INSERT INTO Rooms VALUES("+suiteID+", "+room.getMaxPeople()+")";
+    public boolean addRoom(Suite suite, Room room) {
+        String sql = "INSERT INTO Rooms VALUES("+suite.getSuitID()+", "+room.getMaxPeople()+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
@@ -148,25 +98,8 @@ public class DatabaseSQLite implements Database {
         return true;
     }
 
-    public List<Room> getRooms() {
-        String sql = "SELECT * FROM Rooms";
-        List<Room> rooms = new ArrayList<>();
-        try {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            while (rs.next()) {
-                Room room = new Room(rs.getInt("maxPeople"));
-                rooms.add(room);
-            }
-        } catch (SQLException e) {
-            System.err.println("getRooms() "+e.getMessage());
-            return null;
-        }
-        return rooms;
-    }
-
-    public List<Room> getSuiteRooms(int suiteID) {
-        String sql = "SELECT * FROM Rooms WHERE suiteID = "+suiteID;
+    public List<Room> getSuiteRooms(Suite suite) {
+        String sql = "SELECT * FROM Rooms WHERE suiteID = "+suite.getSuitID();
         List<Room> rooms = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();
@@ -185,43 +118,19 @@ public class DatabaseSQLite implements Database {
     public boolean addCustomer(Customer customer) {
 
         long hashName = hashName(customer.getName());
-        if (hashName == 0) // reserved to mark suite as free
-            return false;
-        
-        String sql = "INSERT INTO Customers VALUES (?, ?, ?, ?, ?, ?)";
+
+        String sql = "INSERT INTO Customers VALUES (?, ?, ?)";
         try {
             Statement stmt = conn.createStatement();
             PreparedStatement ps = conn.prepareStatement(sql);
             int i = 1;
             ps.setLong(i++, hashName);
             ps.setString(i++, customer.getName());
-            ps.setInt(i++, customer.getPaymentmethod().ordinal());
-            ps.setInt(i++, customer.getNumPeople());
-            ps.setLong(i++, customer.getStartDate().toInstant().getEpochSecond());
-            ps.setLong(i, customer.getEndDate().toInstant().getEpochSecond());
+            ps.setInt(i, customer.getPaymentmethod().ordinal());
             ps.executeUpdate();
-
-            for (Suite suite : customer.getSuits()) {
-                stmt.execute("UPDATE Suites SET hashName = " + hashName + " WHERE suiteID = " + suite.getSuitID());
-            }
 
         } catch (SQLException e) {
             System.err.println("addCustomer() "+e.getMessage());
-            return false;
-        }
-        return true;
-    }
-
-    public boolean removeCustomer(String name) {
-        long hashName = hashName(name);
-        String sql = "DELETE FROM Customers WHERE hashName = "+hashName;
-        try {
-            Statement stmt = conn.createStatement();
-            stmt.execute(sql);
-
-            stmt.execute("UPDATE Suites SET hashName = 0 WHERE hashName = " + hashName);
-        } catch (SQLException e) {
-            System.err.println("removeCustomer() "+e.getMessage());
             return false;
         }
         return true;
@@ -235,9 +144,9 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                customer = new Customer(rs.getString("name"), PaymentMethod.values()[rs.getInt("paymentMethod")], null, rs.getInt("numPeople"), new Date(rs.getLong("startDate")), new Date(rs.getLong("endDate")));
-                //List<Suit> suits = this.getCustomerSuites(customer);
-                //customer.setSuits(suits);
+                customer = new Customer();
+                customer.setName(rs.getString("name"));
+                customer.setPaymentmethod(PaymentMethod.values()[rs.getInt("paymentMethod")]);
             }
         } catch (SQLException e) {
             System.err.println("getCustomer() "+e.getMessage());
@@ -246,59 +155,131 @@ public class DatabaseSQLite implements Database {
         return customer;
     }
 
-    public static void main(String[] args) {
-
-        Database db = null;
+    public boolean removeCustomer(Customer customer) {
+        long hashName = hashName(customer.getName());
         try {
-            db = new DatabaseSQLite("jdbc:sqlite::memory:");
-            //db = new DatabaseSQLite("jdbc:sqlite:test.db");
-        } catch (IOException e) {
-            System.exit(-1);
+            Statement stmt = conn.createStatement();
+            stmt.execute("DELETE FROM Customers WHERE hashName = "+hashName);
+            stmt.execute("DELETE FROM Bookings WHERE hashName = "+hashName);
+        } catch (SQLException e) {
+            System.err.println("removeCustomer() "+e.getMessage());
+            return false;
         }
-
-        List<Room> rooms = new java.util.ArrayList<>();
-        rooms.add(new Room(2));
-        db.addSuite(new Suite(1, false, rooms, 1000, 1500, null, false, SuiteType.Standard));
-        db.addSuite(new Suite(2, false, null, 1200, 1600, null, false, SuiteType.Standard));
-        db.addSuite(new Suite(3, false, null, 1200, 1600, null, false, SuiteType.Luxury));
-
-        //db.addRoom(1, new Room(2));
-        db.addRoom(2, new Room(3));
-        db.addRoom(3, new Room(2));
-        db.addRoom(3, new Room(2));
-
-        /*
-        List<Suit> availSuites = db.getCustomerSuites(null);
-        for (Suit suit : availSuites) {
-            System.out.println(suit);
-        }
-
-        availSuites = db.getNumSuites(2);
-        Customer customer = new Customer("Jack", PaymentMethod.Online,availSuites,7,new java.util.Date(2025, 6, 3),new Date(2025,6,13));
-        db.addCustomer(customer);
-
-        availSuites = db.getNumSuites(2);
-        db.addCustomer(new Customer("Ole", PaymentMethod.Online,availSuites,7,new java.util.Date(2025, 6, 3),new Date(2025,6,13)));
-        if (!db.getCustomerSuites(null).isEmpty())
-            System.err.println("suites available");
-
-        customer = db.getCustomer("Jack");
-        List<Suit> bookedSuites = db.getCustomerSuites(customer.getName());
-        customer.setSuits(bookedSuites);
-        System.out.println(customer);
-        for (Suit suit : bookedSuites) {
-            System.out.println(suit);
-            for (Room room : db.getSuiteRooms(suit.getSuitID()))
-                System.out.println(room);
-        }
-        db.removeCustomer("Ole");
-        System.out.println("getSuites");
-        List<Suit> suites = db.getSuites(3);
-        for (Suit suite : suites)
-            System.out.println(suite);
-         */
-        db.close();
+        return true;
     }
 
+    public List<Suite> getAvailSuites(int numPeople, Date startDate, Date endDate) {
+
+        long startDateEpoch = startDate.toInstant().getEpochSecond();
+        long endDateEpoch = endDate.toInstant().getEpochSecond();
+        if (endDateEpoch < startDateEpoch) {
+            System.err.println("getAvailSuites(): endDate < startDate");
+            return null;
+        }
+        String sql = new StringBuilder().append("""
+        SELECT Suites.suiteID, Suites.price, Suites.suiteType,
+                SUM(Rooms.maxPeople) AS maxPeopleSum
+        FROM Suites
+        LEFT JOIN Rooms ON Suites.suiteID=Rooms.suiteID
+        LEFT JOIN Bookings ON Suites.suiteID=Bookings.suiteID
+        WHERE Bookings.bookingID is null OR NOT (
+        """)
+                .append(startDateEpoch)
+                .append("""
+        <= Bookings.endDate AND
+        """)
+                .append(endDateEpoch)
+                .append("""
+        >= Bookings.startDate)
+        GROUP BY Suites.suiteID HAVING maxPeopleSum >=
+        """).append(numPeople).toString();
+        List<Suite> suites = new ArrayList<>();
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), 0, null, false, SuiteType.values()[rs.getInt("suiteType")]);
+                suites.add(suite);
+            }
+        } catch (SQLException e) {
+            System.err.println("getAvailSuites() " + e.getMessage());
+            return null;
+        }
+
+        return suites;
+    }
+
+    public boolean bookSuite(Suite suite, Customer customer, int numPeople, Date startDate, Date endDate) {
+        long hashName = 0;
+        long startDateEpoch = startDate.toInstant().getEpochSecond();
+        long endDateEpoch = endDate.toInstant().getEpochSecond();
+        if (endDateEpoch < startDateEpoch) {
+            System.err.println("bookSuite(): endDate < startDate");
+            return false;
+        }
+        int numDays = (int)Math.abs(ChronoUnit.DAYS.between(
+                LocalDate.ofInstant(startDate.toInstant(), ZoneId.systemDefault()),
+                LocalDate.ofInstant(endDate.toInstant(), ZoneId.systemDefault()))) + 1;
+        hashName = hashName(customer.getName());
+        String sql = "INSERT INTO Bookings VALUES (null, "+hashName+", "+suite.getSuitID()+", "+numPeople+", "+startDateEpoch+", "+endDateEpoch+", "+(suite.getPrice()*numDays)+")";
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.execute(sql);
+        } catch (SQLException e) {
+            System.err.println("bookSuite() " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    public boolean freeSuite(int bookingID) {
+        String sql = "DELETE FROM Bookings WHERE bookingID="+bookingID;
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.execute(sql);
+        } catch (SQLException e) {
+            System.err.println("freeSuite() " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    public List<Suite> getCustomerSuites(Customer customer) {
+        long hashName = 0;
+        hashName = hashName(customer.getName());
+        String sql = "SELECT * FROM Suites JOIN Bookings ON Suites.suiteID=Bookings.suiteID WHERE Bookings.hashName = "+hashName;
+        List<Suite> suites = new ArrayList<>();
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), 0, null, false, SuiteType.values()[rs.getInt("suiteType")]);
+                suites.add(suite);
+            }
+        } catch (SQLException e) {
+            System.err.println("getCustomerSuites() " + e.getMessage());
+            return null;
+        }
+        return suites;
+    }
+
+    public List<Bookings> getBookings(Customer customer) {
+        long hashName = 0;
+        hashName = hashName(customer.getName());
+        String sql = "SELECT * FROM Bookings WHERE hashName = "+hashName;
+        List<Bookings> bookings = new ArrayList<>();
+        try {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                Bookings booking = new Bookings(rs.getInt("bookingID"), rs.getInt("suiteID"), rs.getInt("numPeople"), new Date(rs.getLong("startDate")*1000), new Date(rs.getLong("endDate")*1000), rs.getDouble("price"));
+                bookings.add(booking);
+            }
+        } catch (SQLException e) {
+            System.err.println("getBookings() " + e.getMessage());
+            return null;
+        }
+        return bookings;
+    }
 
 }
