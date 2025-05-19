@@ -2,7 +2,6 @@ package Class;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class Menu {
 
@@ -11,7 +10,7 @@ public class Menu {
     private List<Option> options;
     private String exitTitle;
     private String title;
-    protected Scanner sc;
+    protected TextUI ui;
 
     public Menu(String title, String exitTitle) {
         this.title = title;
@@ -19,7 +18,7 @@ public class Menu {
         options = new ArrayList<>();
         closeFlag = false;
         pauseFlag = false;
-        sc = new Scanner(System.in);
+        ui = new TextUI();
     }
 
     public void addOption(Option opt) {
@@ -30,35 +29,27 @@ public class Menu {
         int i;
         while (!closeFlag) {
             if (pauseFlag) {
-                System.out.println("Press ENTER to continue");
-                sc.nextLine();
+                ui.println("Press ENTER to continue");
+                ui.readLine("");
                 pauseFlag = false;
             }
-            System.out.println(title);
-            System.out.println("------------------------------");
+            ui.println(title);
+            ui.println("------------------------------");
             for (i = 0; i < options.size(); i++) {
-                System.out.println("(" + (i + 1) + ") " + options.get(i).getTitle());
+                ui.println("(" + (i + 1) + ") " + options.get(i).getTitle());
             }
-            System.out.println("(" + (i + 1) + ") " + exitTitle);
-            System.out.println("------------------------------");
-            System.out.print("Enter a number: ");
-            int num;
-            try {
-                num = Integer.decode(sc.nextLine().trim());
-            } catch (NumberFormatException e) {
-                System.out.println("*** Invalid number");
-                pauseFlag = true;
-                continue;
-            }
+            ui.println("(" + (i + 1) + ") " + exitTitle);
+            ui.println("------------------------------");
+            int num = ui.readInt("Enter a number: ");
             num--;
             if (num >= 0 && num < options.size()) {
-                options.get(num).run(sc);
+                options.get(num).run(ui);
                 pauseFlag = true;
             } else if (num == options.size()) {
-                System.out.println("exiting...");
+                ui.println("exiting...");
                 closeFlag = true;
             } else {
-                System.out.println("Unknown option");
+                ui.println("Unknown option");
                 pauseFlag = true;
             }
         }

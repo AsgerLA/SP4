@@ -10,10 +10,13 @@ public class TextUI {
     }
 
 
-    public void print(String message) {
+    public void println(String message) {
         System.out.println(message);
     }
 
+    public void print(String message) {
+        System.out.print(message);
+    }
 
     public String readLine(String prompt) {
         System.out.print(prompt);
