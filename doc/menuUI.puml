@@ -21,7 +21,7 @@ object Book {
 object Cancel {
     name
     // show booked suites
-    picjSuites
+    pickSuites
     // remove booked suites
 }
 

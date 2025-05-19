@@ -68,7 +68,7 @@ class Booking {
 enum ExtraService {
     BREAKFEAST
 }
-class Suit {
+class Suite {
     - int suitNum
     - boolean booked
     - List<Room> rooms
@@ -97,7 +97,7 @@ class Suit {
 }
 enum SuitType {
     STANDARD
-    LUXERY
+    LUXURY
 }
 class Room {
     - int maxPeople
@@ -128,11 +128,11 @@ class Log {
 Hotel *- Activity
 Hotel *-- Database
 Customer *-- PaymentMethod
-Customer *-- Suit
-Suit *-- Room
-Suit *-- ExtraService
-Suit *-- SuitType
-Hotel *-- Suit
+Customer *-- Suite
+Suite *-- Room
+Suite *-- ExtraService
+Suite *-- SuitType
+Hotel *-- Suite
 Hotel *-- Customer
 Hotel *-- Booking
 @enduml
