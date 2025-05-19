@@ -124,6 +124,42 @@ class Log {
     + static void error(String msg)
     + static void flush()
 }
+class TextUI {
+    - Scanner scanner
+
+    + TextUI()
+    + void println(String message)
+    + void print(String message)
+    + String readLine(String prompt)
+    + int readInt(String prompt)
+    + boolean readYesNo(String prompt)
+    + void close()
+}
+class Bookings {
+    - int bookingID
+    - int suiteID
+    - int numPeople
+    - Date startDate
+    - Date endDate
+    - double price
+
+    + Bookings(int bookingID, int suiteID, int numPeople, Date startDate, Date endDate, double price)
+    + int getBookingID()
+    + int getSuiteID()
+    + int getNumPeople()
+    + Date getStartDate()
+    + Date getEndDate()
+    + double getPrice()
+}
+class OptionCancel extends Option {
+    + OptionCancel()
+    + void run(TextUI ui)
+}
+class OptionCheckout extends Option {
+    + OptionCheckout()
+    + void run(TextUI ui)
+}
+
 
 Hotel *- Activity
 Hotel *-- Database
