@@ -70,7 +70,7 @@ public class DatabaseSQLite implements Database {
     }
 
     public boolean addSuite(Suite suite) {
-        String sql = "INSERT INTO Suites VALUES("+suite.getSuitID()+", "+suite.getPrice()+", "+suite.getSuitType().ordinal()+")";
+        String sql = "INSERT INTO Suites VALUES("+suite.getSuiteID()+", "+suite.getPrice()+", "+suite.getSuitType().ordinal()+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
@@ -87,7 +87,7 @@ public class DatabaseSQLite implements Database {
     }
 
     public boolean addRoom(Suite suite, Room room) {
-        String sql = "INSERT INTO Rooms VALUES("+suite.getSuitID()+", "+room.getMaxPeople()+")";
+        String sql = "INSERT INTO Rooms VALUES("+suite.getSuiteID()+", "+room.getMaxPeople()+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
@@ -99,7 +99,7 @@ public class DatabaseSQLite implements Database {
     }
 
     public List<Room> getSuiteRooms(Suite suite) {
-        String sql = "SELECT * FROM Rooms WHERE suiteID = "+suite.getSuitID();
+        String sql = "SELECT * FROM Rooms WHERE suiteID = "+suite.getSuiteID();
         List<Room> rooms = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();
@@ -198,7 +198,7 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), 0, null, false, SuiteType.values()[rs.getInt("suiteType")]);
+                Suite suite = new Suite(rs.getInt("suiteID"), null, rs.getDouble("price"), 0, null, SuiteType.values()[rs.getInt("suiteType")]);
                 suites.add(suite);
             }
         } catch (SQLException e) {
@@ -221,7 +221,7 @@ public class DatabaseSQLite implements Database {
                 LocalDate.ofInstant(startDate.toInstant(), ZoneId.systemDefault()),
                 LocalDate.ofInstant(endDate.toInstant(), ZoneId.systemDefault()))) + 1;
         hashName = hashName(customer.getName());
-        String sql = "INSERT INTO Bookings VALUES (null, "+hashName+", "+suite.getSuitID()+", "+numPeople+", "+startDateEpoch+", "+endDateEpoch+", "+(suite.getPrice()*numDays)+")";
+        String sql = "INSERT INTO Bookings VALUES (null, "+hashName+", "+suite.getSuiteID()+", "+numPeople+", "+startDateEpoch+", "+endDateEpoch+", "+(suite.getPrice()*numDays)+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
@@ -253,7 +253,7 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suite suite = new Suite(rs.getInt("suiteID"), false, null, rs.getDouble("price"), 0, null, false, SuiteType.values()[rs.getInt("suiteType")]);
+                Suite suite = new Suite(rs.getInt("suiteID"), null, rs.getDouble("price"), 0, null, SuiteType.values()[rs.getInt("suiteType")]);
                 suites.add(suite);
             }
         } catch (SQLException e) {

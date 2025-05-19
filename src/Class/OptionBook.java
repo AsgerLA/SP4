@@ -62,7 +62,7 @@ public class OptionBook extends Option {
         for (i = 0; i < availSuites.size(); i++) {
             Suite suite = availSuites.get(i);
             System.out.println((i+1)+" {");
-            System.out.println("  Suite: " + suite.getSuitID());
+            System.out.println("  Suite: " + suite.getSuiteID());
             System.out.println("  Suite type: " + suite.getSuitType().toString().toLowerCase());
             System.out.println("  rooms: " + suite.getRooms());
             System.out.println("  price: " + suite.getPrice());
@@ -89,7 +89,7 @@ public class OptionBook extends Option {
             return;
         System.out.println("Suites Booked for "+numDays+" days:");
         for (Suite suite : bookedSuites) {
-            System.out.println("Suite: " + suite.getSuitID());
+            System.out.println("Suite: " + suite.getSuiteID());
             System.out.println("  Suite type: " + suite.getSuitType().toString().toLowerCase());
             System.out.println("  rooms: " + suite.getRooms());
             System.out.println("  price: " + suite.getPrice());

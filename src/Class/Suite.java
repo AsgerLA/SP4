@@ -6,48 +6,34 @@ import Enum.SuiteType;
 import java.util.List;
 
 public class Suite {
-    private  int suitID;
-    private  boolean booked;
+    private  int suiteID;
     private  List<Room> rooms;
     private  double price;
     private  float holidayFactor;
     private  List<ExtraService> extra;
-    private  boolean balcony;
     private SuiteType suiteType;
 
-    public Suite(int suitID,
-                 boolean booked,
+    public Suite(int suiteID,
                  List<Room> rooms,
                  double price,
                  float holidayFactor,
                  List<ExtraService> extra,
-                 boolean balcony,
                  SuiteType suiteType) {
 
-        this.suitID = suitID;
-        this.booked = booked;
+        this.suiteID = suiteID;
         this.rooms = rooms;
         this.price = price;
         this.holidayFactor = holidayFactor;
         this.extra = extra;
-        this.balcony = balcony;
         this.suiteType = suiteType;
     }
 
-    public int getSuitID() {
-        return suitID;
+    public int getSuiteID() {
+        return suiteID;
     }
 
-    public void setSuitID(int suitID) {
-        this.suitID = suitID;
-    }
-
-    public boolean isBooked() {
-        return booked;
-    }
-
-    public void setBooked(boolean booked) {
-        this.booked = booked;
+    public void setSuiteID(int suiteID) {
+        this.suiteID = suiteID;
     }
 
     public List<Room> getRooms() {
@@ -84,14 +70,6 @@ public class Suite {
         this.extra = extra;
     }
 
-    public boolean isBalcony() {
-        return balcony;
-    }
-
-    public void setBalcony(boolean balcony) {
-        this.balcony = balcony;
-    }
-
     public SuiteType getSuitType() {
         return suiteType;
     }
@@ -103,13 +81,11 @@ public class Suite {
     @Override
     public String toString() {
         return "Suit{" +
-                "suitID=" + suitID +
-                ", booked=" + booked +
+                "suitID=" + suiteID +
                 ", rooms=" + rooms +
                 ", price=" + price +
                 ", holidayFactor=" + holidayFactor +
                 ", extra=" + extra +
-                ", balcony=" + balcony +
                 ", suitType=" + suiteType +
                 '}';
     }

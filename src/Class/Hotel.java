@@ -9,8 +9,8 @@ public class Hotel {
     static Database db;
     static {
         try {
-            db = new DatabaseSQLite("jdbc:sqlite::memory:");
-            //db = new DatabaseSQLite("jdbc:sqlite:hotel.db");
+            //db = new DatabaseSQLite("jdbc:sqlite::memory:");
+            db = new DatabaseSQLite("jdbc:sqlite:hotel.db");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -34,16 +34,18 @@ public class Hotel {
 
         List<ExtraService> extras = new ArrayList<>();
         extras.add(ExtraService.Breakfast);
-        Suite suiteNrOne = new Suite(1,false, null, 5000, 2500,extras,true, SuiteType.Standard);
-        Suite suiteNrTwo = new Suite(2,false, null, 5000, 2500,extras,true, SuiteType.Luxury);
+        Suite suiteNrOne = new Suite(1, null, 5000, 2500,extras, SuiteType.Standard);
+        Suite suiteNrTwo = new Suite(2, null, 5000, 2500,extras, SuiteType.Luxury);
         suites.add(suiteNrOne);
         suites.add(suiteNrTwo);
 
-        db.addSuite(suiteNrOne);
-        db.addSuite(suiteNrTwo);
-        db.addRoom(suiteNrOne, firstRoom);
-        db.addRoom(suiteNrOne, secondRoom);
-        db.addRoom(suiteNrTwo, thirdRoom);
+        if (db.getSuiteRooms(suiteNrOne).isEmpty()) {
+            db.addSuite(suiteNrOne);
+            db.addSuite(suiteNrTwo);
+            db.addRoom(suiteNrOne, firstRoom);
+            db.addRoom(suiteNrOne, secondRoom);
+            db.addRoom(suiteNrTwo, thirdRoom);
+        }
 
         Booking booking = new Booking(db);
         booking.startSession();

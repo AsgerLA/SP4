@@ -29,9 +29,9 @@ class TestDatabaseSQLite {
         roomList.add(new Room(2));
         roomList.add(new Room(3));
         suiteList = new java.util.ArrayList<>();
-        suiteList.add(new Suite(1, false, roomList, 1000, 1500, null, false, SuiteType.Standard));
-        suiteList.add(new Suite(2, false, null, 1200, 1600, null, false, SuiteType.Standard));
-        suiteList.add(new Suite(3, false, null, 1200, 1600, null, false, SuiteType.Luxury));
+        suiteList.add(new Suite(1, roomList, 1000, 1500, null, SuiteType.Standard));
+        suiteList.add(new Suite(2, null, 1200, 1600, null, SuiteType.Standard));
+        suiteList.add(new Suite(3, null, 1200, 1600, null, SuiteType.Luxury));
         boolean res;
         for (Suite suite : suiteList) {
             res = db.addSuite(suite);
@@ -83,7 +83,7 @@ class TestDatabaseSQLite {
         // get booked suite
         List<Suite> suites = db.getCustomerSuites(customer);
         assertEquals(1, suites.size());
-        assertEquals(1, suites.getFirst().getSuitID());
+        assertEquals(1, suites.getFirst().getSuiteID());
         assertEquals(suite.getPrice(), suites.getFirst().getPrice());
         assertEquals(SuiteType.Standard, suites.getFirst().getSuitType());
         assertEquals(roomList.size(), db.getSuiteRooms(suite).size());
@@ -94,7 +94,7 @@ class TestDatabaseSQLite {
         // check booked suite is not available
         availSuites = db.getAvailSuites(numPeople, startDate, endDate);
         assertEquals(2, availSuites.size());
-        assertNotEquals(1, availSuites.getFirst().getSuitID());
+        assertNotEquals(1, availSuites.getFirst().getSuiteID());
 
     }
 
