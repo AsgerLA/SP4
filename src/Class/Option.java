@@ -1,5 +1,7 @@
 package Class;
 
+import java.util.Scanner;
+
 public abstract class Option {
     private String title;
 
@@ -11,5 +13,5 @@ public abstract class Option {
         return title;
     }
 
-    public abstract void run(Menu menu);
+    public abstract void run(Scanner sc);
 }

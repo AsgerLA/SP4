@@ -51,6 +51,8 @@ public class Suite {
     }
 
     public List<Room> getRooms() {
+        if (rooms == null)
+            rooms = Hotel.db.getSuiteRooms(this);
         return rooms;
     }
 

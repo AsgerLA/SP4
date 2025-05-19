@@ -1,60 +1,75 @@
 package Class;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.List;
+import java.util.Scanner;
+
+import Enum.PaymentMethod;
+
 public class OptionBook extends Option {
     public OptionBook() {
         super("Book");
     }
 
-    public void run(Menu menu) {
+    public void run(Scanner sc) {
+        boolean newCustomer = false;
         Customer customer = null;
         System.out.print("Name: ");
-        String name = menu.sc.nextLine().trim();
+        String name = sc.nextLine().trim();
+        customer = Hotel.db.getCustomer(name);
         if (customer == null) {
+            newCustomer = true;
             customer = new Customer();
             customer.setName(name);
         }
+
         System.out.print("Number of guest: ");
         int numPeople;
         try {
-            numPeople = Integer.decode(menu.sc.nextLine());
+            numPeople = Integer.decode(sc.nextLine());
         } catch (NumberFormatException e) {
             System.out.println("*** Invalid number");
             return;
         }
-        System.out.println(numPeople);
-        /*
+
+        Date startDate, endDate;
+        int numDays;
         try {
-            System.out.print("Start date: ");
-            LocalDate startDate = LocalDate.parse(sc.nextLine());
-            customer.setStartDate(Date.from(startDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
-            System.out.print("End date: ");
-            LocalDate endDate = LocalDate.parse(sc.nextLine());
-            if (endDate.isBefore(startDate))
+            System.out.print("Start date (yyyy-mm-dd): ");
+            LocalDate lstartDate = LocalDate.parse(sc.nextLine());
+            System.out.print("End date (yyyy-mm-dd): ");
+            LocalDate lendDate = LocalDate.parse(sc.nextLine());
+            if (lendDate.isBefore(lstartDate))
                 throw new Exception();
-            customer.setEndDate(Date.from(endDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            startDate = Date.from(lstartDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            endDate = Date.from(lendDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            numDays = (int)Math.abs(ChronoUnit.DAYS.between(lstartDate, lendDate)) + 1;
         } catch (Exception e) {
             System.out.println("*** Invalid date");
-            break;
+            return;
         }
-        List<Suite> availSuites = db.getSuites(numPeople,
-                customer.getStartDate(), customer.getEndDate());
+
+        List<Suite> availSuites = Hotel.db.getAvailSuites(numPeople, startDate, endDate);
         if (availSuites == null || availSuites.isEmpty()) {
             System.out.println("No suites available");
-            break;
+            return;
         }
         System.out.println("Available suites:");
         int i;
         for (i = 0; i < availSuites.size(); i++) {
             Suite suite = availSuites.get(i);
-            System.out.println("Suite: " + suite.getSuitID());
-            System.out.println("Suite type: " + suite.getSuitType().toString().toLowerCase());
-            System.out.println("rooms: " + suite.getRooms());
-            System.out.println("price: " + suite.getPrice());
-            System.out.println();
+            System.out.println((i+1)+" {");
+            System.out.println("  Suite: " + suite.getSuitID());
+            System.out.println("  Suite type: " + suite.getSuitType().toString().toLowerCase());
+            System.out.println("  rooms: " + suite.getRooms());
+            System.out.println("  price: " + suite.getPrice());
+            System.out.println("}");
         }
         System.out.print("Select suites (e.g. \"1 2\"): ");
         String[] values = sc.nextLine().split(" ");
-        List<Suite> bookedSuites = new java.util.ArrayList<>();
         for (String s : values) {
             try {
                 i = Integer.decode(s)-1;
@@ -66,44 +81,22 @@ public class OptionBook extends Option {
                 System.out.println("*** Invalid suite: "+(i+1));
                 continue;
             }
-            bookedSuites.add(availSuites.get(i));
+            Hotel.db.bookSuite(availSuites.get(i), customer, numPeople, startDate, endDate);
         }
-        System.out.println("Suites Booked:");
         double totalPrice = 0;
+        List<Suite> bookedSuites = Hotel.db.getCustomerSuites(customer);
+        if (bookedSuites == null)
+            return;
+        System.out.println("Suites Booked for "+numDays+" days:");
         for (Suite suite : bookedSuites) {
             System.out.println("Suite: " + suite.getSuitID());
-            System.out.println("Suite type: " + suite.getSuitType().toString().toLowerCase());
-            System.out.println("rooms: " + suite.getRooms());
-            System.out.println("price: " + suite.getPrice());
+            System.out.println("  Suite type: " + suite.getSuitType().toString().toLowerCase());
+            System.out.println("  rooms: " + suite.getRooms());
+            System.out.println("  price: " + suite.getPrice());
             System.out.println();
-            totalPrice += suite.getPrice();
+            totalPrice += suite.getPrice()*numDays;
         }
         System.out.println("Total price: "+totalPrice);
-        System.out.print("Extra service (y/n): ");
-        if (sc.nextLine().equals("y")) {
-            for (i = 0; i < ExtraService.values().length; i++) {
-                System.out.println((i+1)+": "+ExtraService.values()[i].toString()+" (price:"+ExtraService.prices[i]+")");
-            }
-            values = sc.nextLine().split(" ");
-            List<ExtraService> extra = new java.util.ArrayList<>();
-            for (String s : values) {
-                try {
-                    i = Integer.decode(s)-1;
-                } catch (NumberFormatException e) {
-                    System.out.println("*** Invalid number");
-                    break;
-                }
-                if (i < 0 || i >= ExtraService.values().length) {
-                    System.out.println("*** Invalid choice: "+(i+1));
-                    continue;
-                }
-                extra.add(ExtraService.values()[i]);
-                totalPrice += ExtraService.prices[i];
-            }
-            System.out.println(extra);
-            System.out.println("Total price: "+totalPrice);
-        }
-        customer.setSuits(bookedSuites);
         System.out.println("Choose payment method:");
         System.out.println("1. Online");
         System.out.println("2. In person");
@@ -123,7 +116,7 @@ public class OptionBook extends Option {
                 customer.setPaymentmethod(PaymentMethod.Physical_cash);
             }
         }
-        db.addCustomer(customer);
-        */
+        if (newCustomer && !bookedSuites.isEmpty())
+            Hotel.db.addCustomer(customer);
     }
 }

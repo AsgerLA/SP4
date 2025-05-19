@@ -20,6 +20,8 @@ public class Booking {
     public void startSession() {
         Menu mainmenu = new Menu("Main menu", "Quit");
         mainmenu.addOption(new OptionBook());
+        mainmenu.addOption(new OptionCancel());
+        mainmenu.addOption(new OptionCheckout());
         mainmenu.show();
         /*
         int num = 0;
