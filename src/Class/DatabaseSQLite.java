@@ -45,7 +45,7 @@ public class DatabaseSQLite implements Database {
         try {
             conn.close();
         } catch (SQLException e) {
-            System.err.println("close() "+e.getMessage());
+            Log.error("close() "+e.getMessage());
             return false;
         }
         return true;
@@ -65,7 +65,7 @@ public class DatabaseSQLite implements Database {
                 System.out.println();
             }
         } catch (SQLException e) {
-            System.err.println("debugPrint() "+e.getMessage());
+            Log.error("debugPrint() "+e.getMessage());
         }
     }
 
@@ -80,7 +80,7 @@ public class DatabaseSQLite implements Database {
                     this.addRoom(suite, room);
             }
         } catch (SQLException e) {
-            System.err.println("addSuit() "+e.getMessage());
+            Log.error("addSuit() "+e.getMessage());
             return false;
         }
         return true;
@@ -92,7 +92,7 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
         } catch (SQLException e) {
-            System.err.println("addRoom() "+e.getMessage());
+            Log.error("addRoom() "+e.getMessage());
             return false;
         }
         return true;
@@ -109,7 +109,7 @@ public class DatabaseSQLite implements Database {
                 rooms.add(room);
             }
         } catch (SQLException e) {
-            System.err.println("getSuiteRooms() "+e.getMessage());
+            Log.error("getSuiteRooms() "+e.getMessage());
             return null;
         }
         return rooms;
@@ -130,7 +130,7 @@ public class DatabaseSQLite implements Database {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("addCustomer() "+e.getMessage());
+            Log.error("addCustomer() "+e.getMessage());
             return false;
         }
         return true;
@@ -149,7 +149,7 @@ public class DatabaseSQLite implements Database {
                 customer.setPaymentmethod(PaymentMethod.values()[rs.getInt("paymentMethod")]);
             }
         } catch (SQLException e) {
-            System.err.println("getCustomer() "+e.getMessage());
+            Log.error("getCustomer() "+e.getMessage());
             return null;
         }
         return customer;
@@ -162,7 +162,7 @@ public class DatabaseSQLite implements Database {
             stmt.execute("DELETE FROM Customers WHERE hashName = "+hashName);
             stmt.execute("DELETE FROM Bookings WHERE hashName = "+hashName);
         } catch (SQLException e) {
-            System.err.println("removeCustomer() "+e.getMessage());
+            Log.error("removeCustomer() "+e.getMessage());
             return false;
         }
         return true;
@@ -173,7 +173,7 @@ public class DatabaseSQLite implements Database {
         long startDateEpoch = startDate.toInstant().getEpochSecond();
         long endDateEpoch = endDate.toInstant().getEpochSecond();
         if (endDateEpoch < startDateEpoch) {
-            System.err.println("getAvailSuites(): endDate < startDate");
+            Log.error("getAvailSuites(): endDate < startDate");
             return null;
         }
         String sql = new StringBuilder().append("""
@@ -202,7 +202,7 @@ public class DatabaseSQLite implements Database {
                 suites.add(suite);
             }
         } catch (SQLException e) {
-            System.err.println("getAvailSuites() " + e.getMessage());
+            Log.error("getAvailSuites() " + e.getMessage());
             return null;
         }
 
@@ -214,7 +214,7 @@ public class DatabaseSQLite implements Database {
         long startDateEpoch = startDate.toInstant().getEpochSecond();
         long endDateEpoch = endDate.toInstant().getEpochSecond();
         if (endDateEpoch < startDateEpoch) {
-            System.err.println("bookSuite(): endDate < startDate");
+            Log.error("bookSuite(): endDate < startDate");
             return false;
         }
         int numDays = (int)Math.abs(ChronoUnit.DAYS.between(
@@ -226,7 +226,7 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
         } catch (SQLException e) {
-            System.err.println("bookSuite() " + e.getMessage());
+            Log.error("bookSuite() " + e.getMessage());
             return false;
         }
         return true;
@@ -238,7 +238,7 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
         } catch (SQLException e) {
-            System.err.println("freeSuite() " + e.getMessage());
+            Log.error("freeSuite() " + e.getMessage());
             return false;
         }
         return true;
@@ -257,7 +257,7 @@ public class DatabaseSQLite implements Database {
                 suites.add(suite);
             }
         } catch (SQLException e) {
-            System.err.println("getCustomerSuites() " + e.getMessage());
+            Log.error("getCustomerSuites() " + e.getMessage());
             return null;
         }
         return suites;
@@ -276,7 +276,7 @@ public class DatabaseSQLite implements Database {
                 bookings.add(booking);
             }
         } catch (SQLException e) {
-            System.err.println("getBookings() " + e.getMessage());
+            Log.error("getBookings() " + e.getMessage());
             return null;
         }
         return bookings;

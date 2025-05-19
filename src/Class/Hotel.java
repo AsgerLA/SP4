@@ -1,6 +1,9 @@
 package Class;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import Enum.*;
@@ -16,6 +19,12 @@ public class Hotel {
         }
     }
     public static void main(String[] args) {
+        //try {
+        //    Log.setOutputStream(new PrintStream("hotel.log"));
+        //} catch (FileNotFoundException e) {
+        //    Log.error("Log.setOutputStream failed");
+        //}
+
         List<Suite> suites = new ArrayList<>();
 
         // Creating rooms
