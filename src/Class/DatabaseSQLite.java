@@ -220,9 +220,11 @@ public class DatabaseSQLite implements Database {
 
     public boolean freeSuite(Bookings booking) {
         String sql = "DELETE FROM Bookings WHERE bookingID="+booking.getBookingID();
+        String sql2 = "DELETE FROM ExtraServices WHERE bookingID="+booking.getBookingID();
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
+            stmt.execute(sql2);
         } catch (SQLException e) {
             Log.error("freeSuite() " + e.getMessage());
             return false;
