@@ -14,17 +14,7 @@ import Enum.*;
 public class DatabaseSQLite implements Database {
     private final Connection conn;
 
-    // fnv64a
-    private long hashName(String name) {
-        final long FNV_64_offset_basis = 0xcbf29ce484222325L;
-        final long FNV_64_prime = 0x100000001b3L;
-        long hashName = FNV_64_offset_basis;
-        for (char c : name.toCharArray()) {
-            hashName ^= c;
-            hashName *= FNV_64_prime;
-        }
-        return hashName;
-    }
+
     public DatabaseSQLite(String url) throws IOException {
         try {
             conn = DriverManager.getConnection(url);
@@ -62,8 +52,10 @@ public class DatabaseSQLite implements Database {
             Log.debug(name);
             while (rs.next()) {
                 StringBuilder sb = new StringBuilder();
-                for (int i = 1 ; i <= cnt; i++)
-                    sb.append(rs.getString(i) + " | ");
+                for (int i = 1 ; i <= cnt; i++) {
+                    sb.append(rs.getString(i));
+                    sb.append(" | ");
+                }
                 Log.debug(sb.toString());
             }
 
@@ -120,14 +112,11 @@ public class DatabaseSQLite implements Database {
 
     public boolean addCustomer(Customer customer) {
 
-        long hashName = hashName(customer.getName());
-
         String sql = "INSERT INTO Customers VALUES (?, ?, ?)";
         try {
-            Statement stmt = conn.createStatement();
             PreparedStatement ps = conn.prepareStatement(sql);
             int i = 1;
-            ps.setLong(i++, hashName);
+            ps.setLong(i++, customer.getHashName());
             ps.setString(i++, customer.getName());
             ps.setInt(i, customer.getPaymentmethod().ordinal());
             ps.executeUpdate();
@@ -140,16 +129,13 @@ public class DatabaseSQLite implements Database {
     }
 
     public Customer getCustomer(String name) {
-        long hashName = hashName(name);
-        String sql = "SELECT * FROM Customers WHERE hashName = "+hashName;
+        String sql = "SELECT * FROM Customers WHERE hashName = "+Customer.hashName(name);
         Customer customer = null;
         try {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                customer = new Customer();
-                customer.setName(rs.getString("name"));
-                customer.setPaymentmethod(PaymentMethod.values()[rs.getInt("paymentMethod")]);
+                customer = new Customer(rs.getString("name"), PaymentMethod.values()[rs.getInt("paymentMethod")]);
             }
         } catch (SQLException e) {
             Log.error("getCustomer() "+e.getMessage());
@@ -159,11 +145,10 @@ public class DatabaseSQLite implements Database {
     }
 
     public boolean removeCustomer(Customer customer) {
-        long hashName = hashName(customer.getName());
         try {
             Statement stmt = conn.createStatement();
-            stmt.execute("DELETE FROM Customers WHERE hashName = "+hashName);
-            stmt.execute("DELETE FROM Bookings WHERE hashName = "+hashName);
+            stmt.execute("DELETE FROM Customers WHERE hashName = "+customer.getHashName());
+            stmt.execute("DELETE FROM Bookings WHERE hashName = "+customer.getHashName());
         } catch (SQLException e) {
             Log.error("removeCustomer() "+e.getMessage());
             return false;
@@ -213,7 +198,6 @@ public class DatabaseSQLite implements Database {
     }
 
     public boolean bookSuite(Suite suite, Customer customer, int numPeople, Date startDate, Date endDate) {
-        long hashName = 0;
         long startDateEpoch = startDate.toInstant().getEpochSecond();
         long endDateEpoch = endDate.toInstant().getEpochSecond();
         if (endDateEpoch < startDateEpoch) {
@@ -223,8 +207,7 @@ public class DatabaseSQLite implements Database {
         int numDays = (int)Math.abs(ChronoUnit.DAYS.between(
                 LocalDate.ofInstant(startDate.toInstant(), ZoneId.systemDefault()),
                 LocalDate.ofInstant(endDate.toInstant(), ZoneId.systemDefault()))) + 1;
-        hashName = hashName(customer.getName());
-        String sql = "INSERT INTO Bookings VALUES (null, "+hashName+", "+suite.getSuiteID()+", "+numPeople+", "+startDateEpoch+", "+endDateEpoch+", "+(suite.getPrice()*numDays)+")";
+        String sql = "INSERT INTO Bookings VALUES (null, "+customer.getHashName()+", "+suite.getSuiteID()+", "+numPeople+", "+startDateEpoch+", "+endDateEpoch+", "+(suite.getPrice()*numDays)+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
@@ -270,9 +253,7 @@ public class DatabaseSQLite implements Database {
     }
 
     public List<Suite> getCustomerSuites(Customer customer) {
-        long hashName = 0;
-        hashName = hashName(customer.getName());
-        String sql = "SELECT * FROM Suites JOIN Bookings ON Suites.suiteID=Bookings.suiteID WHERE Bookings.hashName = "+hashName;
+        String sql = "SELECT * FROM Suites JOIN Bookings ON Suites.suiteID=Bookings.suiteID WHERE Bookings.hashName = "+customer.getHashName();
         List<Suite> suites = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();
@@ -289,9 +270,7 @@ public class DatabaseSQLite implements Database {
     }
 
     public List<Bookings> getBookings(Customer customer) {
-        long hashName = 0;
-        hashName = hashName(customer.getName());
-        String sql = "SELECT * FROM Bookings WHERE hashName = "+hashName;
+        String sql = "SELECT * FROM Bookings WHERE hashName = "+customer.getHashName();
         List<Bookings> bookings = new ArrayList<>();
         try {
             Statement stmt = conn.createStatement();

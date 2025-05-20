@@ -21,8 +21,7 @@ public class OptionBook extends Option {
         customer = Hotel.db.getCustomer(name);
         if (customer == null) {
             newCustomer = true;
-            customer = new Customer();
-            customer.setName(name);
+            customer = new Customer(name);
         }
 
         int numPeople = ui.readInt("Number of guest: ");

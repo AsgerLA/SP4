@@ -52,9 +52,7 @@ class TestDatabaseSQLite {
     @Test
     public void testBookSuite() {
         boolean res;
-        Customer customer = new Customer();
-        customer.setName("test");
-        customer.setPaymentmethod(PaymentMethod.Online);
+        Customer customer = new Customer("test", PaymentMethod.Online);
 
         // register customer
         res = db.addCustomer(customer);
@@ -97,9 +95,7 @@ class TestDatabaseSQLite {
     @Test
     public void testFreeSuite() {
         boolean res;
-        Customer customer = new Customer();
-        customer.setName("test");
-        customer.setPaymentmethod(PaymentMethod.Online);
+        Customer customer = new Customer("test", PaymentMethod.Online);
 
         // register customer
         res = db.addCustomer(customer);
@@ -123,9 +119,7 @@ class TestDatabaseSQLite {
     @Test
     public void testCheckout() {
         boolean res;
-        Customer customer = new Customer();
-        customer.setName("test");
-        customer.setPaymentmethod(PaymentMethod.Online);
+        Customer customer = new Customer("test", PaymentMethod.Online);
 
         // register customer
         res = db.addCustomer(customer);
@@ -147,8 +141,7 @@ class TestDatabaseSQLite {
         customer = db.getCustomer("test");
         assertTrue(customer == null);
 
-        customer = new Customer();
-        customer.setName("test");
+        customer = new Customer("test");
         List<Suite> suites = db.getCustomerSuites(customer);
         assertTrue(suites.isEmpty());
         suites = db.getAvailSuites(2, new Date(0), new Date(1000));
