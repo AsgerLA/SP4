@@ -19,7 +19,7 @@ abstract class Option {
     + run(ui: TextUI): void
 }
 Menu *-- Option
-class OptionBook {
+class OptionBook extends Option {
     + OptionBook()
     + run(ui: TextUI): void
 }
@@ -36,9 +36,11 @@ enum PaymentMethod {
 }
 class Customer {
     - String name
+    - long hashName
     - PaymentMethod paymentmethod
 
-    + Customer()
+    + static long hashName(String name)
+    + Customer(String name)
     + Customer(String name, PaymentMethod paymentmethod)
     + String getName()
     + void setName(String name)
@@ -72,9 +74,8 @@ class Suite {
     - rooms: List<Room>
     - price: double
     - holidayFactor: float
-    - extra: List<ExtraService>
     - suiteType: SuiteType
-    + Suite(suiteID: int, rooms: List<Room>, price: double, holidayFactor: float, extra: List<ExtraService>, suiteType: SuiteType)
+    + Suite(suiteID: int, rooms: List<Room>, price: double, holidayFactor: float, suiteType: SuiteType)
     + getSuiteID(): int
     + setSuiteID(suiteID: int): void
     + getRooms(): List<Room>
@@ -83,8 +84,6 @@ class Suite {
     + setPrice(price: double): void
     + getHolidayFactor(): float
     + setHolidayFactor(holidayFactor: float): void
-    + getExtra(): List<ExtraService>
-    + setExtra(extra: List<ExtraService>): void
     + getSuitType(): SuiteType
     + setSuitType(suiteType: SuiteType): void
     + toString(): String
@@ -189,9 +188,14 @@ Hotel *-- Database
 Customer *-- PaymentMethod
 Customer *-- Suite
 Suite *-- Room
-Suite *-- ExtraService
 Suite *-- SuitType
-Hotel *-- Suite
-Hotel *-- Customer
+Booking *-- Menu
 Hotel *-- Booking
+Database *-- ExtraService
+OptionBook *-- ExtraService
+Option *-- TextUI
+Menu *-- TextUI
+Database *-- Bookings
+Database *-- Room
+Database *-- Suite
 @enduml
