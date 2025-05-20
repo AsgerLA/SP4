@@ -12,9 +12,9 @@ public enum ExtraService {
     }
 
     public static final double[] prices = new double[] {
-       10,
-       20,
-       15,
-       10
+       300,
+       200,
+       150,
+       75
     };
 }

@@ -31,7 +31,7 @@ public class TextUI {
             try {
                 return Integer.parseInt(input);
             } catch (NumberFormatException e) {
-                System.out.println("Error. Please try again.");
+                System.out.println("Invalid input. Please try again.");
             }
         }
     }
