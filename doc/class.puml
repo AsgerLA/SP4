@@ -1,27 +1,32 @@
 @startuml
 
 class Menu {
-    - boolean closeFlag
-    - Option[] options
-    - String exitTitle
-    - String title
-
-    + Menu(String tile)
-    + addOption(Option opt)
-    + setExitTitle(String title)
-    + show()
+    - closeFlag: boolean
+    - pauseFlag: boolean
+    - options: List<Option>
+    - exitTitle: String
+    - title: String
+    - ui: TextUI
+    + Menu(title: String, exitTitle: String)
+    + addOption(opt: Option): void
+    + show(): void
 }
 
-class Option {
-    + Option(String title)
-    + run()
+abstract class Option {
+    - title: String
+    + Option(title: String)
+    + getTitle(): String
+    + run(ui: TextUI): void
 }
 Menu *-- Option
-class OptionBook extends Option {}
+class OptionBook {
+    + OptionBook()
+    + run(ui: TextUI): void
+}
 
 class Hotel {
-    Database db
-    Customer customer
+    - Database db
+
     + static void main()
 }
 enum PaymentMethod {
@@ -31,90 +36,108 @@ enum PaymentMethod {
 }
 class Customer {
     - String name
-    - PaymentMethod paymentMethod
-    - List<Suit> suits
-    - int numPeople
-    - Date startDate
-    - Date endDate
+    - PaymentMethod paymentmethod
+
+    + Customer()
+    + Customer(String name, PaymentMethod paymentmethod)
     + String getName()
-        + void setName(String name)
-        + PaymentMethod getPaymentMethod()
-        + void setPaymentMethod(PaymentMethod paymentMethod)
-        + List<Suit> getSuits()
-        + void setSuits(List<Suit> suits)
-        + int getNumPeople()
-        + void setNumPeople(int numPeople)
-        + Date getStartDate()
-        + void setStartDate(Date startDate)
-        + Date getEndDate()
-        + void setEndDate(Date endDate)
-        + Customer(String name, PaymentMethod paymentMethod, List<Suit> suits, int numPeople, Date startDate, Date endDate)
+    + void setName(String name)
+    + PaymentMethod getPaymentmethod()
+    + void setPaymentmethod(PaymentMethod paymentmethod)
+    + String toString()
 }
 
-class Activity {
-    spa
-    fitness
-    casino
-}
+
+
 class Booking {
-     - List<Suit> suitsList
-     - Customer customer
-     - Scanner sc
-     + Booking(List<Suit> suitsList, Customer customer)
-     + void startSession()
- }
+    - Database db
+
+    + Booking(Database db)
+    + void startSession()
+}
+
 
 
 enum ExtraService {
-    BREAKFEAST
+    Spa
+    Fitness
+    Breakfast
+    Casino
 }
+
+ExtraService : + prices: double[]
+
 class Suite {
-    - int suitNum
-    - boolean booked
-    - List<Room> rooms
-    - double price
-    - float holidayFactor
-    - List<ExtraService> extras
-    - boolean balcony
-    - SuitType type
-    + int getSuitNum()
-        + void setSuitNum(int suitNum)
-        + boolean isBooked()
-        + void setBooked(boolean booked)
-        + List<Room> getRooms()
-        + void setRooms(List<Room> rooms)
-        + double getPrice()
-        + void setPrice(double price)
-        + float getHolidayFactor()
-        + void setHolidayFactor(float holidayFactor)
-        + List<ExtraService> getExtras()
-        + void setExtras(List<ExtraService> extras)
-        + boolean isBalcony()
-        + void setBalcony(boolean balcony)
-        + SuitType getType()
-        + void setType(SuitType type)
-        + Suit(int suitNum, boolean booked, List<Room> rooms, double price, float holidayFactor, List<ExtraService> extras, boolean balcony, SuitType type)
+    - suiteID: int
+    - rooms: List<Room>
+    - price: double
+    - holidayFactor: float
+    - extra: List<ExtraService>
+    - suiteType: SuiteType
+    + Suite(suiteID: int, rooms: List<Room>, price: double, holidayFactor: float, extra: List<ExtraService>, suiteType: SuiteType)
+    + getSuiteID(): int
+    + setSuiteID(suiteID: int): void
+    + getRooms(): List<Room>
+    + setRooms(rooms: List<Room>): void
+    + getPrice(): double
+    + setPrice(price: double): void
+    + getHolidayFactor(): float
+    + setHolidayFactor(holidayFactor: float): void
+    + getExtra(): List<ExtraService>
+    + setExtra(extra: List<ExtraService>): void
+    + getSuitType(): SuiteType
+    + setSuitType(suiteType: SuiteType): void
+    + toString(): String
 }
 enum SuitType {
     STANDARD
     LUXURY
 }
 class Room {
-    - int maxPeople
-    + int getMaxPeople()
-    + void setMaxPeople(int maxPeople)
-    + Room(int maxPeople)
+    - maxPeople: int
+    + Room(maxPeople: int)
+    + getMaxPeople(): int
+    + setMaxPeople(maxPeople: int): void
+    + toString(): String
 }
 
-class Database {
-    Suit getSuit(int suitNum)
-    addSuit(Suit suit)
-    removeSuit(Suit suit)
+interface Database {
+    + boolean close()
+    + void printTable(String name)
+    + boolean addSuite(Suite suite)
+    + boolean addRoom(Suite suite, Room room)
+    + List<Room> getSuiteRooms(Suite suite)
+    + boolean addCustomer(Customer customer)
+    + Customer getCustomer(String name)
+    + boolean removeCustomer(Customer customer)
+    + List<Suite> getAvailSuites(int numPeople, Date startDate, Date endDate)
+    + boolean bookSuite(Suite suite, Customer customer, int numPeople, Date startDate, Date endDate)
+    + boolean freeSuite(int bookingID)
+    + List<Suite> getCustomerSuites(Customer customer)
+    + List<Bookings> getBookings(Customer customer)
 }
 
-class DatabaseSQLlite extends Database {
 
+class DatabaseSQLite implements Database {
+    - Connection conn
+
+    - long hashName(String name)
+    + DatabaseSQLite(String url) throws IOException
+    + boolean close()
+    + void printTable(String name)
+    + boolean addSuite(Suite suite)
+    + boolean addRoom(Suite suite, Room room)
+    + List<Room> getSuiteRooms(Suite suite)
+    + boolean addCustomer(Customer customer)
+    + Customer getCustomer(String name)
+    + boolean removeCustomer(Customer customer)
+    + List<Suite> getAvailSuites(int numPeople, Date startDate, Date endDate)
+    + boolean bookSuite(Suite suite, Customer customer, int numPeople, Date startDate, Date endDate)
+    + boolean freeSuite(int bookingID)
+    + List<Suite> getCustomerSuites(Customer customer)
+    + List<Bookings> getBookings(Customer customer)
 }
+
 
 class Log {
     - static PrintStream out
@@ -161,7 +184,7 @@ class OptionCheckout extends Option {
 }
 
 
-Hotel *- Activity
+
 Hotel *-- Database
 Customer *-- PaymentMethod
 Customer *-- Suite
