@@ -140,8 +140,14 @@ class DatabaseSQLite implements Database {
 
 class Log {
     - static PrintStream out
+    - static int logLevel = 0;
+    - static final int LOG_LEVEL_DEBUG = 0;
+    - static final int LOG_LEVEL_WARN  = 1;
+    - static final int LOG_LEVEL_ERROR = 2;
     + static void setOutputStream(OutputStream out)
+    + static void setLogLevel(int logLevel)
 
+    + static void debug(String msg)
     + static void warn(String msg)
     + static void error(String msg)
     + static void flush()
@@ -192,10 +198,10 @@ Suite *-- SuitType
 Booking *-- Menu
 Hotel *-- Booking
 Database *-- ExtraService
-OptionBook *-- ExtraService
 Option *-- TextUI
 Menu *-- TextUI
 Database *-- Bookings
 Database *-- Room
 Database *-- Suite
+Database *-- Customer
 @enduml
