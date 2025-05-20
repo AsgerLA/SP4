@@ -33,8 +33,9 @@ public class DatabaseSQLite implements Database {
 
             stmt.execute("CREATE TABLE IF NOT EXISTS Customers (hashName INTEGER PRIMARY KEY UNIQUE, name TEXT, paymentMethod INTEGER)");
             stmt.execute("CREATE TABLE IF NOT EXISTS Bookings (bookingID INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, hashName INTEGER REFERENCES Customers (hashName), suiteID INTEGER REFERENCES Suites (suiteID), numPeople INTEGER, startDate INTEGER, endDate INTEGER, price DOUBLE)");
-            stmt.execute("CREATE TABLE IF NOT EXISTS Suites (suiteID INTEGER PRIMARY KEY UNIQUE, price DOUBLE, suiteType INTEGER)");
+            stmt.execute("CREATE TABLE IF NOT EXISTS Suites (suiteID INTEGER PRIMARY KEY UNIQUE, price DOUBLE, holidayFactor FLOAT, suiteType INTEGER)");
             stmt.execute("CREATE TABLE IF NOT EXISTS Rooms (suiteID INTEGER REFERENCES Suites (suiteID), maxPeople INTEGER)");
+            stmt.execute("CREATE TABLE IF NOT EXISTS ExtraServices (serviceID INTEGER, bookingID INTEGER REFERENCES Bookings (BookingID))");
 
         } catch (SQLException e) {
             throw new IOException("DatabaseSQLite() "+e.getMessage());
@@ -58,19 +59,21 @@ public class DatabaseSQLite implements Database {
             ResultSetMetaData rsmd = rs.getMetaData();
 
             int cnt = rsmd.getColumnCount();
-            System.out.println(name);
+            Log.debug(name);
             while (rs.next()) {
+                StringBuilder sb = new StringBuilder();
                 for (int i = 1 ; i <= cnt; i++)
-                    System.out.print(rs.getString(i) + " | ");
-                System.out.println();
+                    sb.append(rs.getString(i) + " | ");
+                Log.debug(sb.toString());
             }
+
         } catch (SQLException e) {
-            Log.error("debugPrint() "+e.getMessage());
+            Log.error("printTable() "+e.getMessage());
         }
     }
 
     public boolean addSuite(Suite suite) {
-        String sql = "INSERT INTO Suites VALUES("+suite.getSuiteID()+", "+suite.getPrice()+", "+suite.getSuitType().ordinal()+")";
+        String sql = "INSERT INTO Suites VALUES("+suite.getSuiteID()+", "+suite.getPrice()+", "+suite.getHolidayFactor()+", "+suite.getSuitType().ordinal()+")";
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
@@ -177,7 +180,7 @@ public class DatabaseSQLite implements Database {
             return null;
         }
         String sql = new StringBuilder().append("""
-        SELECT Suites.suiteID, Suites.price, Suites.suiteType,
+        SELECT Suites.suiteID, Suites.price, Suites.holidayFactor, Suites.suiteType,
                 SUM(Rooms.maxPeople) AS maxPeopleSum
         FROM Suites
         LEFT JOIN Rooms ON Suites.suiteID=Rooms.suiteID
@@ -198,7 +201,7 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suite suite = new Suite(rs.getInt("suiteID"), null, rs.getDouble("price"), 0, null, SuiteType.values()[rs.getInt("suiteType")]);
+                Suite suite = new Suite(rs.getInt("suiteID"), null, rs.getDouble("price"), rs.getFloat("holidayFactor"), SuiteType.values()[rs.getInt("suiteType")]);
                 suites.add(suite);
             }
         } catch (SQLException e) {
@@ -232,13 +235,35 @@ public class DatabaseSQLite implements Database {
         return true;
     }
 
-    public boolean freeSuite(int bookingID) {
-        String sql = "DELETE FROM Bookings WHERE bookingID="+bookingID;
+    public boolean freeSuite(Bookings booking) {
+        String sql = "DELETE FROM Bookings WHERE bookingID="+booking.getBookingID();
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
         } catch (SQLException e) {
             Log.error("freeSuite() " + e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    public boolean bookExtraService(ExtraService extra, Bookings booking) {
+        long startDateEpoch = booking.getStartDate().toInstant().getEpochSecond();
+        long endDateEpoch = booking.getEndDate().toInstant().getEpochSecond();
+        if (endDateEpoch < startDateEpoch) {
+            Log.error("bookExtraService(): endDate < startDate");
+            return false;
+        }
+        int numDays = (int)Math.abs(ChronoUnit.DAYS.between(
+                LocalDate.ofInstant(booking.getStartDate().toInstant(), ZoneId.systemDefault()),
+                LocalDate.ofInstant(booking.getEndDate().toInstant(), ZoneId.systemDefault()))) + 1;
+        String sql = "INSERT INTO ExtraServices VALUES("+extra.ordinal()+", "+booking.getBookingID()+")";
+        try {
+            Statement stmt = conn.createStatement();
+            stmt.execute(sql);
+            stmt.execute("UPDATE Bookings SET price = price +"+(extra.getPrice()*numDays));
+        } catch (SQLException e) {
+            Log.error("bookExtraService() " + e.getMessage());
             return false;
         }
         return true;
@@ -253,7 +278,7 @@ public class DatabaseSQLite implements Database {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
-                Suite suite = new Suite(rs.getInt("suiteID"), null, rs.getDouble("price"), 0, null, SuiteType.values()[rs.getInt("suiteType")]);
+                Suite suite = new Suite(rs.getInt("suiteID"), null, rs.getDouble("price"), rs.getFloat("holidayFactor"), SuiteType.values()[rs.getInt("suiteType")]);
                 suites.add(suite);
             }
         } catch (SQLException e) {

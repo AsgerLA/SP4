@@ -29,9 +29,9 @@ class TestDatabaseSQLite {
         roomList.add(new Room(2));
         roomList.add(new Room(3));
         suiteList = new java.util.ArrayList<>();
-        suiteList.add(new Suite(1, roomList, 1000, 1500, null, SuiteType.Standard));
-        suiteList.add(new Suite(2, null, 1200, 1600, null, SuiteType.Standard));
-        suiteList.add(new Suite(3, null, 1200, 1600, null, SuiteType.Luxury));
+        suiteList.add(new Suite(1, roomList, 200, 1.5f, SuiteType.Standard));
+        suiteList.add(new Suite(2, null, 200, 1.2f, SuiteType.Standard));
+        suiteList.add(new Suite(3, null, 500, 1.5f, SuiteType.Luxury));
         boolean res;
         for (Suite suite : suiteList) {
             res = db.addSuite(suite);
@@ -41,10 +41,6 @@ class TestDatabaseSQLite {
             res = db.addRoom(suite, new Room(2));
             assertTrue(res);
         }
-        //db.addExtraService("Spa", 10.0);
-        //db.addExtraService("Fitness", 12.0);
-        //db.addExtraService("Breakfast", 11.0);
-        //db.addExtraService("Casino", 3.0);
     }
 
     @AfterEach
@@ -116,7 +112,7 @@ class TestDatabaseSQLite {
         assertTrue(res);
 
         // free suite
-        res = db.freeSuite(1);
+        res = db.freeSuite(new Bookings(1, 0, 0, null, null, 0.0));
         assertTrue(res);
         List<Suite> suites = db.getCustomerSuites(customer);
         assertTrue(suites.isEmpty());

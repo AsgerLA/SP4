@@ -3,6 +3,8 @@ package Class;
 import java.util.Date;
 import java.util.List;
 
+import Enum.ExtraService;
+
 public interface Database {
     boolean close();
 
@@ -20,7 +22,8 @@ public interface Database {
     // Get all available suites from startDate to endDate for at least numPeople
     List<Suite> getAvailSuites(int numPeople, Date startDate, Date endDate);
     boolean bookSuite(Suite suite, Customer customer, int numPeople, Date startDate, Date endDate);
-    boolean freeSuite(int bookingID);
+    boolean freeSuite(Bookings booking);
+    boolean bookExtraService(ExtraService extra, Bookings booking);
     List<Suite> getCustomerSuites(Customer customer);
     List<Bookings> getBookings(Customer customer);
 }

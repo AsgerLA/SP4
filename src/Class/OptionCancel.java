@@ -1,7 +1,6 @@
 package Class;
 
 import java.util.List;
-import java.util.Scanner;
 
 public class OptionCancel extends Option {
 
@@ -37,6 +36,7 @@ public class OptionCancel extends Option {
             ui.println("}");
         }
         String[] values = ui.readLine("Select suites (e.g. \"1 2\"): ").split(" ");
+        int cancelCnt = 0;
         for (String s : values) {
             try {
                 i = Integer.decode(s)-1;
@@ -48,8 +48,12 @@ public class OptionCancel extends Option {
                 ui.println("*** Invalid suite: "+(i+1));
                 continue;
             }
-            Hotel.db.freeSuite(bookings.get(i).getBookingID());
+            Hotel.db.freeSuite(bookings.get(i));
+            cancelCnt++;
         }
+
+        if (cancelCnt >= bookings.size())
+            Hotel.db.removeCustomer(customer);
 
     }
 }

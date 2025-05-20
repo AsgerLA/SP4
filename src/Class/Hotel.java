@@ -22,8 +22,9 @@ public class Hotel {
         //try {
         //    Log.setOutputStream(new PrintStream("hotel.log"));
         //} catch (FileNotFoundException e) {
-        //    Log.error("Log.setOutputStream failed");
+        //    Log.error("Log.setOutputStream failed - "+e.getMessage());
         //}
+        Log.setLogLevel(Log.LOG_LEVEL_WARN);
 
         List<Suite> suites = new ArrayList<>();
 
@@ -41,10 +42,8 @@ public class Hotel {
         //rooms.add(thirdRoom);
         rooms.add(new Room(3));
 
-        List<ExtraService> extras = new ArrayList<>();
-        extras.add(ExtraService.Breakfast);
-        Suite suiteNrOne = new Suite(1, null, 5000, 2500,extras, SuiteType.Standard);
-        Suite suiteNrTwo = new Suite(2, null, 5000, 2500,extras, SuiteType.Luxury);
+        Suite suiteNrOne = new Suite(1, null, 200, 1.5f, SuiteType.Standard);
+        Suite suiteNrTwo = new Suite(2, null, 500, 2.0f, SuiteType.Luxury);
         suites.add(suiteNrOne);
         suites.add(suiteNrTwo);
 
@@ -63,6 +62,7 @@ public class Hotel {
         db.printTable("Suites");
         db.printTable("Rooms");
         db.printTable("Bookings");
+        db.printTable("ExtraServices");
 
         db.close();
 

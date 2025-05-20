@@ -1,7 +1,6 @@
 package Class;
 
 import java.util.List;
-import java.util.Scanner;
 
 import Enum.PaymentMethod;
 
@@ -53,7 +52,7 @@ public class OptionCheckout extends Option {
                 continue;
             }
             price += bookings.get(i).getPrice();
-            Hotel.db.freeSuite(bookings.get(i).getBookingID());
+            Hotel.db.freeSuite(bookings.get(i));
             checkoutCnt++;
         }
         if (customer.getPaymentmethod() != PaymentMethod.Online) {

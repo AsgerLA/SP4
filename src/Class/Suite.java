@@ -10,21 +10,18 @@ public class Suite {
     private  List<Room> rooms;
     private  double price;
     private  float holidayFactor;
-    private  List<ExtraService> extra;
     private SuiteType suiteType;
 
     public Suite(int suiteID,
                  List<Room> rooms,
                  double price,
                  float holidayFactor,
-                 List<ExtraService> extra,
                  SuiteType suiteType) {
 
         this.suiteID = suiteID;
         this.rooms = rooms;
         this.price = price;
         this.holidayFactor = holidayFactor;
-        this.extra = extra;
         this.suiteType = suiteType;
     }
 
@@ -62,14 +59,6 @@ public class Suite {
         this.holidayFactor = holidayFactor;
     }
 
-    public List<ExtraService> getExtra() {
-        return extra;
-    }
-
-    public void setExtra(List<ExtraService> extra) {
-        this.extra = extra;
-    }
-
     public SuiteType getSuitType() {
         return suiteType;
     }
@@ -85,7 +74,6 @@ public class Suite {
                 ", rooms=" + rooms +
                 ", price=" + price +
                 ", holidayFactor=" + holidayFactor +
-                ", extra=" + extra +
                 ", suitType=" + suiteType +
                 '}';
     }

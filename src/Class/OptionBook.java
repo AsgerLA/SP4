@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 
 import Enum.PaymentMethod;
+import Enum.ExtraService;
 
 public class OptionBook extends Option {
     public OptionBook() {
@@ -73,34 +74,76 @@ public class OptionBook extends Option {
         }
         double totalPrice = 0;
         List<Suite> bookedSuites = Hotel.db.getCustomerSuites(customer);
-        if (bookedSuites == null)
+        List<Bookings> bookings = Hotel.db.getBookings(customer);
+        if (bookedSuites == null || bookings == null)
             return;
+        if (bookedSuites.size() != bookings.size()) {
+            Log.error("bookedSuites.size() != bookings.size()");
+            return;
+        }
         ui.println("Suites Booked for "+numDays+" days:");
-        for (Suite suite : bookedSuites) {
-            ui.println("Suite: " + suite.getSuiteID());
+        for (i = 0; i < bookings.size(); i++) {
+            Bookings booking = bookings.get(i);
+            Suite suite = bookedSuites.get(i);
+            if (booking.getSuiteID() != suite.getSuiteID()) {
+                Log.error("booking.getSuiteID() != suite.getSuiteID()");
+                continue;
+            }
+            ui.println(booking.getBookingID()+" {");
+            ui.println("  Suite: " + suite.getSuiteID());
             ui.println("  Suite type: " + suite.getSuitType().toString().toLowerCase());
             ui.println("  rooms: " + suite.getRooms());
-            ui.println("  price: " + suite.getPrice());
-            ui.println("");
-            totalPrice += suite.getPrice()*numDays;
+            ui.println("  price: " + booking.getPrice());
+            ui.println("}");
+            totalPrice += booking.getPrice();
+            if (ui.readYesNo("Extra service")) {
+                for (ExtraService extra : ExtraService.values()) {
+                    ui.println((extra.ordinal()+1)+" {");
+                    ui.println("  "+extra);
+                    ui.println("  price: "+extra.getPrice());
+                    ui.println("}");
+                }
+                String[] valuesExtra = ui.readLine("Select extras (e.g. \"1 2\"): ").split(" ");
+                for (String str : valuesExtra) {
+                    try {
+                        i = Integer.decode(str)-1;
+                    } catch (NumberFormatException e) {
+                        ui.println("*** Invalid number");
+                        break;
+                    }
+                    if (i < 0 || i >= ExtraService.values().length) {
+                        ui.println("*** Invalid extra: "+(i+1));
+                        continue;
+                    }
+                    Hotel.db.bookExtraService(ExtraService.values()[i], booking);
+                    totalPrice += ExtraService.prices[i]*numDays;
+                }
+            }
         }
         ui.println("Total price: "+totalPrice);
-        ui.println("1. Online");
-        ui.println("2. In person");
-        String input = ui.readLine("Choose payment method: ");
-        if (Integer.parseInt(input) == 1) {
-            customer.setPaymentmethod(PaymentMethod.Online);
-        }
-        else if(Integer.parseInt(input) == 2) {
-            ui.println("Will it be:");
-            ui.println("1. Card");
-            ui.println("2. Cash");
-            input = ui.readLine("");
+        if (newCustomer) {
+            ui.println("1. Online");
+            ui.println("2. In person");
+            i = ui.readInt("Choose payment method: ");
+            if (i == 1) {
+                customer.setPaymentmethod(PaymentMethod.Online);
+            } else if (i == 2) {
+                ui.println("Will it be:");
+                ui.println("1. Card");
+                ui.println("2. Cash");
+                i = ui.readInt("");
 
-            if(Integer.parseInt(input) == 1){
-                customer.setPaymentmethod(PaymentMethod.Physical_card);
-            } else if (Integer.parseInt(input) == 2){
-                customer.setPaymentmethod(PaymentMethod.Physical_cash);
+                if (i == 1) {
+                    customer.setPaymentmethod(PaymentMethod.Physical_card);
+                } else if (i == 2) {
+                    customer.setPaymentmethod(PaymentMethod.Physical_cash);
+                } else {
+                    ui.println("*** Invalid payment method");
+                    return;
+                }
+            } else {
+                ui.println("*** Invalid payment method");
+                return;
             }
         }
         if (newCustomer && !bookedSuites.isEmpty())
